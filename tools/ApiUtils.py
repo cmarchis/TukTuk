@@ -1,6 +1,7 @@
 import urllib, urllib2, json
 
 
+
 class ApiUtils(object):
     """
     API calls to the GUI Rest API. These are used as expected data for validation
@@ -19,11 +20,44 @@ class ApiUtils(object):
         response = urllib2.urlopen(request)
         json_object = json.load(response)
         # print json_object['deployment']['attachedPolicy']
-        myPolicies = []
+        my_policies = []
 
         for item_now in json_object['deployment']['attachedPolicy']:
-            myPolicies.append(item_now['policy'])
-        print myPolicies
-        print myPolicies[1]['name']
+            my_policies.append(item_now['policy'])
 
-        return myPolicies
+        return my_policies
+
+    def grab_total(self, policy_type):
+        my_policies = self.grab_policies_json()
+        sum = 0
+        for policy_now in my_policies:
+            if policy_now['policyType']['name'] == policy_type:
+                sum += policy_now['complianceScore']['totalTests']
+        return sum
+
+    def grab_list_of_policies_types(self):
+        my_policies = self.grab_policies_json()
+        list = []
+        for policy_now in my_policies:
+            if policy_now['policyType']['name'] != None:
+                list.append(policy_now['policyType']['name'])
+        return list
+
+    def grab_total_of_same_policy_type(self, policy_type):
+        my_policies = self.grab_policies_json()
+        sum = 0
+        for policy_now in my_policies:
+            if policy_now['policyType']['name'] == policy_type:
+                sum += 1
+        return sum
+
+    def grab_undefined_policies(self, policy_type):
+        my_policies = self.grab_policies_json()
+        sum = 0
+        for policy_now in my_policies:
+            if policy_now['policyType']['name'] == policy_type:
+                sum += policy_now['complianceScore']['unknown']
+
+        return sum
+
+
