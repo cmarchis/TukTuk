@@ -5,17 +5,15 @@ POLICIES_LIST_SELECTOR = 'div.grommetux-box--pad-small div.grommetux-box--pad-me
 
 
 class DeploymentsPage(WebdriverBase):
-
     def create_list_of_dictionary_for_resources(self):
         resources_list = self.locate_elements_by_css_selector(RESOURCES_LIST_SELECTOR)
         return_list = []
         for item_now in resources_list:
             list_item = {}
             list_item['name'] = item_now.find_element_by_css_selector("div.grommetux-columns__column:first-child").text
-            list_item['type'] = item_now.find_element_by_css_selector("div.grommetux-columns__column:last-child").text
+            list_item['status'] = item_now.find_element_by_css_selector("div.grommetux-columns__column:last-child").text
             return_list.append(list_item)
         return return_list
-
 
     def create_list_of_dictionary_for_policies(self):
         policies_list = self.locate_elements_by_css_selector(POLICIES_LIST_SELECTOR)
@@ -27,5 +25,4 @@ class DeploymentsPage(WebdriverBase):
             list_item['variances'] = item_now.find_element_by_css_selector("div h6 span").text
             return_list.append(list_item)
         return return_list
-
 

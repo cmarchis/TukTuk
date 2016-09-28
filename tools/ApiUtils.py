@@ -1,7 +1,6 @@
 import urllib, urllib2, json
 
 
-
 class ApiUtils(object):
     """
     API calls to the GUI Rest API. These are used as expected data for validation
@@ -26,6 +25,11 @@ class ApiUtils(object):
             my_policies.append(item_now['policy'])
 
         return my_policies
+
+    # def get_json(self):
+    #     import requests
+    #     r = requests.get('http://localhost:8010/urest/v1/deployments/d10c819a-0fb1-4910-8747-38ccb5f7f3e3')
+    #     return r.json()
 
     def grab_total(self, policy_type):
         my_policies = self.grab_policies_json()
@@ -60,4 +64,24 @@ class ApiUtils(object):
 
         return sum
 
+    def grab_list_of_resources_with_status(self):
+        my_policies = self.grab_policies_json()
+        return_list = []
+        for policy_now in my_policies:
+            list_item = {}
+            list_item['name'] = policy_now['name']
+            if policy_now['complianceScore']['unknown'] != 0:
+                list_item['status'] = "Unknown"
+            elif policy_now['complianceScore']['noncompliantOutRSLO'] != 0:
+                list_item['status'] = "Non Compliant"
+            elif policy_now['complianceScore']['noncompliantInRSLO'] != 0:
+                list_item['status'] = "Warning"
+            elif policy_now['complianceScore']['compliantInMSLO'] != 0:
+                list_item['status'] = "Compliant"
 
+            return_list.append(list_item)
+        return return_list
+
+
+if __name__ == "__main__":
+    print "list: ", ApiUtils().grab_list_of_resources()

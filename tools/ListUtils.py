@@ -2,6 +2,16 @@ from tools.ApiUtils import ApiUtils
 
 
 class ListUtils(object):
+    def sort_list_alpahbetic(self, list):
+        new_list = sorted(list, key=lambda k: k['type'])
+        return new_list
+        return new_list
+
+    def sort_list_alpahbetic_by_name(self, list):
+        new_list = sorted(list, key=lambda k: k['name'])
+        return new_list
+        return new_list
+
     def remove_duplicates_from_list(self, list):
         output = []
         seen = set()
@@ -16,12 +26,17 @@ class ListUtils(object):
         for element in list_of_policies_types:
             list_item = {}
             list_item['type'] = element
-            list_item['number'] = ApiUtils().grab_total_of_same_policy_type(element)
-            list_item['variances'] = ApiUtils().grab_total(element) - ApiUtils().grab_undefined_policies(element)
+            list_item['number'] = str(ApiUtils().grab_total_of_same_policy_type(element))
+            list_item['variances'] = str(
+                ApiUtils().grab_total(element) - ApiUtils().grab_undefined_policies(element)) + " Variances"
             return_list.append(list_item)
         return return_list
 
 
+
+
 if __name__ == "__main__":
-    print "list: ", ListUtils().create_list_of_policies_model(
-        ListUtils().remove_duplicates_from_list(ApiUtils().grab_list_of_policies_types()))
+    # print "list: ", ListUtils().sort_list_alpahbetic(ListUtils().create_list_of_policies_model(
+        # ListUtils().remove_duplicates_from_list(ApiUtils().grab_list_of_policies_types())))
+
+    print "resources: ", ApiUtils().grab_list_of_resources_with_status()
