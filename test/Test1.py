@@ -1,9 +1,10 @@
 import unittest
-from tools.DriverUtils import DriverUtils
-from tools.WebdriverBase import WebdriverBase
-from pages.MenuNavigationPage import MenuNavigationPage
-from pages.DeploymentsMenuHeaderPage import DeploymentsMenuHeaderPage
+
 from pages.DeploymentsPage import DeploymentsPage
+
+from pages.MenuNavigationPage import MenuNavigationPage
+from pages.deployments.DeploymentsMenuHeaderPage import DeploymentsMenuHeaderPage
+from tools.DriverUtils import DriverUtils
 
 
 class Test1(unittest.TestCase):

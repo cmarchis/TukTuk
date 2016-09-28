@@ -1,24 +1,14 @@
-import time
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.common.keys import Keys
-from DriverUtils import DriverUtils
 
 
 class WebdriverBase(object):
-    # driver = DriverUtils().start_driver()
     ELEMENT_WAIT = 30
-
-    # # config driver
-    # driver.maximize_window()
-
 
     def __init__(self, driver):
         self.driver = driver
         self.driver.set_page_load_timeout(self.ELEMENT_WAIT)
-
-
 
     def navigate_to(self, url):
         """

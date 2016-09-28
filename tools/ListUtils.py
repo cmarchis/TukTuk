@@ -2,15 +2,16 @@ from tools.ApiUtils import ApiUtils
 
 
 class ListUtils(object):
-    def sort_list_alpahbetic(self, list):
-        new_list = sorted(list, key=lambda k: k['type'])
-        return new_list
-        return new_list
+    def sort_list_alphabetically_by(self, field_key, list):
+        """
+        Sort provided list by the values of the given field
+        :param field_key:
+        :param list:
+        :return sorted_list:
+        """
+        sorted_list = sorted(list, key=lambda k: k[field_key])
+        return sorted_list
 
-    def sort_list_alpahbetic_by_name(self, list):
-        new_list = sorted(list, key=lambda k: k['name'])
-        return new_list
-        return new_list
 
     def remove_duplicates_from_list(self, list):
         output = []
@@ -21,22 +22,105 @@ class ListUtils(object):
                 seen.add(value)
         return output
 
-    def create_list_of_policies_model(self, list_of_policies_types):
+    def create_list_of_policies_model(self, policies_list):
+        """
+        Create a minified list from the policies_list JSON
+        :param policies_list:
+        :return: list(item[type, number, variances],...)
+        """
+        list_of_policies_types = self.grab_list_of_policies_types(policies_list)
         return_list = []
         for element in list_of_policies_types:
             list_item = {}
             list_item['type'] = element
-            list_item['number'] = str(ApiUtils().grab_total_of_same_policy_type(element))
-            list_item['variances'] = str(
-                ApiUtils().grab_total(element) - ApiUtils().grab_undefined_policies(element)) + " Variances"
+            list_item['number'] = str(self.grab_total_of_same_policy_type(element, policies_list))
+            list_item['variances'] = str(self.grab_total(element, policies_list) - self.grab_undefined_policies(element, policies_list)) + " Variances"
             return_list.append(list_item)
         return return_list
 
 
+    def grab_total(self, policy_type, policies_list):
+        """
+        From the policies list, return the total tests from policies with the same type
+        :param policy_type:
+        :param policies_list:
+        :return: total
+        """
+        sum = 0
+        for policy_now in policies_list:
+            if policy_now['policyType']['name'] == policy_type:
+                sum += policy_now['complianceScore']['totalTests']
+        return sum
+
+
+    def grab_list_of_policies_types(self, policies_list):
+        """
+        From policies list, return the list of policy type names
+        :param policies_list:
+        :return: list(policy_name,...)
+        """
+        list = []
+        for policy_now in policies_list:
+            if policy_now['name'] != None:
+                list.append(policy_now['name'])
+        # for policy_now in policies_list:
+        #     if policy_now['policyType']['name'] != None:
+        #         list.append(policy_now['policyType']['name'])
+        return list
+
+
+    def grab_total_of_same_policy_type(self, policy_type, policies_list):
+        """
+        From the policies list, return the number of policies items with the same type
+        :param policy_type:
+        :param policies_list:
+        :return: total
+        """
+        sum = 0
+        for policy_now in policies_list:
+            if policy_now['policyType']['name'] == policy_type:
+                sum += 1
+        return sum
+
+
+    def grab_undefined_policies(self, policy_type, policies_list):
+        """
+        From the policies list, return the total of undefined policies with the same type
+        :param policy_type:
+        :param policies_list:
+        :return: total
+        """
+        sum = 0
+        for policy_now in policies_list:
+            if policy_now['policyType']['name'] == policy_type:
+                sum += policy_now['complianceScore']['unknown']
+
+        return sum
+
+
+    def grab_list_of_resources_with_status(self, policies_list):
+        """
+        From list of policies, returns a list of resource name into correct compliance category
+        :param policies_list:
+        :return list(item[name, status],...):
+        """
+        return_list = []
+        for policy_now in policies_list:
+            list_item = {}
+            list_item['name'] = policy_now['name']
+            if policy_now['complianceScore']['unknown'] != 0:
+                list_item['status'] = "Unknown"
+            elif policy_now['complianceScore']['noncompliantOutRSLO'] != 0:
+                list_item['status'] = "Non Compliant"
+            elif policy_now['complianceScore']['noncompliantInRSLO'] != 0:
+                list_item['status'] = "Warning"
+            elif policy_now['complianceScore']['compliantInMSLO'] != 0:
+                list_item['status'] = "Compliant"
+
+            return_list.append(list_item)
+        return return_list
 
 
 if __name__ == "__main__":
-    # print "list: ", ListUtils().sort_list_alpahbetic(ListUtils().create_list_of_policies_model(
-        # ListUtils().remove_duplicates_from_list(ApiUtils().grab_list_of_policies_types())))
-
-    print "resources: ", ApiUtils().grab_list_of_resources_with_status()
+    policies_list = ApiUtils().grab_policies_json()
+    print "aaa: ", ListUtils().grab_list_of_policies_types(policies_list)

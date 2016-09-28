@@ -4,6 +4,9 @@ MENU_HEADER_CONTAINER_LOCATOR = 'div.grommetux-box--justify-end button'
 
 
 class DeploymentsMenuHeaderPage(WebdriverBase):
+    """
+    Actions related to Deployments top action bar
+    """
 
     def click_on_header_menu_item(self, name):
         """
