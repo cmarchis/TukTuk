@@ -61,8 +61,8 @@ class ListUtils(object):
         """
         list = []
         for policy_now in policies_list:
-            if policy_now['name'] != None:
-                list.append(policy_now['name'])
+            if policy_now['policyType']['name'] != None:
+                list.append(policy_now['policyType']['name'])
         # for policy_now in policies_list:
         #     if policy_now['policyType']['name'] != None:
         #         list.append(policy_now['policyType']['name'])
@@ -123,4 +123,12 @@ class ListUtils(object):
 
 if __name__ == "__main__":
     policies_list = ApiUtils().grab_policies_json()
-    print "aaa: ", ListUtils().grab_list_of_policies_types(policies_list)
+    # print "aaa: ", ListUtils().grab_list_of_policies_types(policies_list)
+    # list_of_policies_types = ListUtils().grab_list_of_policies_types(policies_list)
+    # for element in list_of_policies_types:
+    #     print"grab_undefined_policies:" ,ListUtils().grab_undefined_policies(element, policies_list)
+    print"aaa: ", ListUtils().grab_list_of_policies_types(policies_list)
+    print"aaa: ", ListUtils().grab_total_of_same_policy_type('Best practices',policies_list)
+    print"grab_total: ", ListUtils().grab_total('Best practices',policies_list)
+    print"grab_undefined_policies: ", ListUtils().grab_undefined_policies('Best practices',policies_list)
+
