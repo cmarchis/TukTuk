@@ -10,6 +10,16 @@ from tools.SoftAssert import SoftAssert
 
 
 class ViewDeploymentComplianceStatusOverviewTest(unittest.TestCase):
+    """
+    Test wil make 2 verification steps:
+    In the first one test will navigate to deployments page an grab in a dictionary list all policies displayed with
+    their attributes (number of variances, number of times that specific policy types appear) and compare this list
+    with a list of dictionary grabbed from API call in setUp method.
+    The second step verify that the resources dictionary list [{resource name, status},...] grabbed from application
+    interface is the same as the list obtained from API call in setUp method. The status for resource (Warning,
+    Compliant,Non Compliant, Unknown) is calculated separated considering complianceScore grabbed from API call.
+    """
+
     def setUp(self):
         self.policies_list = ApiUtils().grab_policies_json()
         api_policy_types_list = ListUtils().grab_list_of_policies_types(self.policies_list)

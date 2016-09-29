@@ -1,9 +1,7 @@
 import unittest
-import time
 from pages.MenuNavigationPage import MenuNavigationPage
 from pages.templates.TemplatesMenuListPage import TemplatesMenuListPage
 from pages.templates.details.TemplateDetailsPage import TemplateDetailsPage
-from pages.templates.details.TemplateActionsPage import TemplatActionsPage
 from tools.DriverUtils import DriverUtils
 from tools.ApiUtils import ApiUtils
 from tools.ListUtils import ListUtils

@@ -11,6 +11,14 @@ from tools.SoftAssert import SoftAssert
 
 
 class IncludeComplianceActionsInDeploymentActionSectionTest(unittest.TestCase):
+    """
+    Test contains 2 verifications steps:
+    First step validate that list of menu option that is displayed in Deployments Page is the same as an expected list
+    of menu options that should be displayed.
+    In the second verification steps test is validating that the deployments info grabbed from application interface are
+    the same as those from API call. A list of dictionary grabbed from interface is compared with a list of dictionary
+    grabbed from API call.
+    """
     def setUp(self):
         self.json_list = ApiUtils().grab_json()
         self.api_deployment_info = ListUtils().grab_list_of_deployment_info(self.json_list)
