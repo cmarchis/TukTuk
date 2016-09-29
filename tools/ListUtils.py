@@ -12,7 +12,6 @@ class ListUtils(object):
         sorted_list = sorted(list, key=lambda k: k[field_key])
         return sorted_list
 
-
     def remove_duplicates_from_list(self, list):
         output = []
         seen = set()
@@ -34,10 +33,10 @@ class ListUtils(object):
             list_item = {}
             list_item['type'] = element
             list_item['number'] = str(self.grab_total_of_same_policy_type(element, policies_list))
-            list_item['variances'] = str(self.grab_total(element, policies_list) - self.grab_undefined_policies(element, policies_list)) + " Variances"
+            list_item['variances'] = str(self.grab_total(element, policies_list) - self.grab_undefined_policies(element,
+                                                                                                                policies_list)) + " Variances"
             return_list.append(list_item)
         return return_list
-
 
     def grab_total(self, policy_type, policies_list):
         """
@@ -51,7 +50,6 @@ class ListUtils(object):
             if policy_now['policyType']['name'] == policy_type:
                 sum += policy_now['complianceScore']['totalTests']
         return sum
-
 
     def grab_list_of_policies_types(self, policies_list):
         """
@@ -68,7 +66,6 @@ class ListUtils(object):
         #         list.append(policy_now['policyType']['name'])
         return list
 
-
     def grab_total_of_same_policy_type(self, policy_type, policies_list):
         """
         From the policies list, return the number of policies items with the same type
@@ -81,7 +78,6 @@ class ListUtils(object):
             if policy_now['policyType']['name'] == policy_type:
                 sum += 1
         return sum
-
 
     def grab_undefined_policies(self, policy_type, policies_list):
         """
@@ -96,7 +92,6 @@ class ListUtils(object):
                 sum += policy_now['complianceScore']['unknown']
 
         return sum
-
 
     def grab_list_of_resources_with_status(self, policies_list):
         """
@@ -120,15 +115,40 @@ class ListUtils(object):
             return_list.append(list_item)
         return return_list
 
+    def grab_template_names(self, templtes_list):
+        """
+        From list of templates, returns a list of template names as a result
+        :param policies_list:
+        :return list(item[name],...):
+        """
+        return_list = []
+        for template_now in templtes_list:
+            list_item = {}
+            list_item['name'] = template_now['templateName']
+            return_list.append(list_item)
+
+        return return_list
+
+    def grab_template_data(self, template_name, templtes_list):
+        list_item = {}
+        for template_now in templtes_list:
+
+            if template_now['templateName'] == template_name:
+                list_item[]
+
+
+        return list_item
 
 if __name__ == "__main__":
     policies_list = ApiUtils().grab_policies_json()
+    templates_list = ApiUtils().grab_templates_json()
     # print "aaa: ", ListUtils().grab_list_of_policies_types(policies_list)
     # list_of_policies_types = ListUtils().grab_list_of_policies_types(policies_list)
     # for element in list_of_policies_types:
     #     print"grab_undefined_policies:" ,ListUtils().grab_undefined_policies(element, policies_list)
-    print"aaa: ", ListUtils().grab_list_of_policies_types(policies_list)
-    print"aaa: ", ListUtils().grab_total_of_same_policy_type('Best practices',policies_list)
-    print"grab_total: ", ListUtils().grab_total('Best practices',policies_list)
-    print"grab_undefined_policies: ", ListUtils().grab_undefined_policies('Best practices',policies_list)
+    # print"aaa: ", ListUtils().grab_list_of_policies_types(policies_list)
+    # print"aaa: ", ListUtils().grab_total_of_same_policy_type('Best practices', policies_list)
+    # print"grab_total: ", ListUtils().grab_total('Best practices', policies_list)
+    # print"grab_undefined_policies: ", ListUtils().grab_undefined_policies('Best practices', policies_list)
 
+    print 'template names: ', ListUtils().grab_template_names(templates_list)
