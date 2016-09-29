@@ -9,7 +9,7 @@ from tools.ListUtils import ListUtils
 from tools.SoftAssert import SoftAssert
 
 
-class Test1(unittest.TestCase):
+class ViewDeploymentComplianceStatusOverviewTest(unittest.TestCase):
     def setUp(self):
         self.policies_list = ApiUtils().grab_policies_json()
         api_policy_types_list = ListUtils().grab_list_of_policies_types(self.policies_list)
@@ -22,7 +22,7 @@ class Test1(unittest.TestCase):
 
         self.browser = DriverUtils().start_driver()
 
-    def test_Test1(self):
+    def test_ViewDeploymentComplianceStatusOverviewTest(self):
         menu_navigation_page = MenuNavigationPage(self.browser)
         menu_navigation_page.navigate_to("http://localhost:8014/provision")
         menu_navigation_page.navigate_to("http://localhost:8014/provision")

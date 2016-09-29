@@ -11,9 +11,6 @@ class DeploymentsPage(WebdriverBase):
     Mapping for Deployments Tab
     """
 
-    def __init__(self, driver):
-        self.driver = driver
-
     def create_list_of_dictionary_for_resources(self):
         """
         list of dictionary resources. Functionality corresponding to list of resources displayed under the overview.

@@ -1,4 +1,5 @@
 from tools.WebdriverBase import WebdriverBase
+import re
 
 MENU_HEADER_CONTAINER_LOCATOR = 'div.grommetux-box--justify-end button'
 
@@ -24,5 +25,7 @@ class DeploymentsMenuHeaderPage(WebdriverBase):
         menu_links_list = self.locate_elements_by_css_selector(MENU_HEADER_CONTAINER_LOCATOR)
         list_items = []
         for item_now in menu_links_list:
-            list_items.append(item_now.text)
+            text=item_now.find_element_by_css_selector("span svg title span").text
+            button_text=re.sub(text,'',item_now.text)
+            list_items.append(button_text)
         return list_items

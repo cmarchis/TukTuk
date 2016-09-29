@@ -10,11 +10,11 @@ from tools.ListUtils import ListUtils
 from tools.SoftAssert import SoftAssert
 
 
-
 class IncludeComplianceActionsInDeploymentActionSectionTest(unittest.TestCase):
     def setUp(self):
         self.json_list = ApiUtils().grab_json()
         self.api_deployment_info = ListUtils().grab_list_of_deployment_info(self.json_list)
+        self.expected_menu_option_list=['Scan Compliance', 'Remediate', 'Change Template']
 
         self.browser = DriverUtils().start_driver()
 
@@ -25,9 +25,11 @@ class IncludeComplianceActionsInDeploymentActionSectionTest(unittest.TestCase):
         menu_navigation_page.click_on_menu_item("Deployments")
         deployment_page = DeploymentsPage(self.browser)
         aplication_deployment_info = deployment_page.create_list_of_dictionary_of_deployment_info()
-        deployments_menu_header_page=DeploymentsMenuHeaderPage(self.browser)
-        aplication_menu_options=deployments_menu_header_page.create_list_of_menu_options()
-        print "aplication_menu_options",aplication_menu_options
+        deployments_menu_header_page = DeploymentsMenuHeaderPage(self.browser)
+        aplication_menu_options_list = deployments_menu_header_page.create_list_of_menu_options()
+
+        SoftAssert().verfy_equals_true("List of menu option doesn't matched ",
+                                       aplication_menu_options_list, self.expected_menu_option_list)
 
 
         SoftAssert().verfy_equals_true("List of deployments info doesn't matched ",

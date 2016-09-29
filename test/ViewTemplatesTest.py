@@ -10,7 +10,7 @@ from tools.ListUtils import ListUtils
 from tools.SoftAssert import SoftAssert
 
 
-class Test1(unittest.TestCase):
+class ViewTemplatesTest(unittest.TestCase):
     def setUp(self):
         self.template_name = 'MySql Provision Template'
         templates_list = ApiUtils().grab_templates_json()
@@ -19,7 +19,7 @@ class Test1(unittest.TestCase):
 
         self.browser = DriverUtils().start_driver()
 
-    def test_Test1(self):
+    def test_ViewTemplatesTest(self):
         menu_navigation_page = MenuNavigationPage(self.browser)
         menu_navigation_page.navigate_to("http://localhost:8014/provision")
         menu_navigation_page.navigate_to("http://localhost:8014/provision")
@@ -53,7 +53,8 @@ class Test1(unittest.TestCase):
         print "Deploy List"
         print self.template_data['noOfDeployments']
         print template_details.grab_deployments_data()
-        SoftAssert().verfy_equals_true("Number of deploys does not match", self.template_data['noOfDeployments'], len(template_details.grab_deployments_data()))
+        SoftAssert().verfy_equals_true("Number of deploys does not match", self.template_data['noOfDeployments'],
+                                       len(template_details.grab_deployments_data()))
 
         # template_actions = TemplatActionsPage(self.browser)
         # print template_actions.grab_actions_label()
