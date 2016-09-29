@@ -140,7 +140,7 @@ class ListUtils(object):
         Grabbes template date as displayed on the template details page.
         :param template_name:
         :param templtes_list:
-        :return list(item{resourceTypes[],attachedPolicies[],noOfDeployments},...):
+        :return item{resourceTypes[],attachedPolicies[],noOfDeployments}:
         """
         policy_details = {}
         for template_now in templtes_list:
