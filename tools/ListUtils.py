@@ -147,7 +147,7 @@ class ListUtils(object):
 
                 policy_details['noOfDeployments'] = template_now['noOfDeployments']
 
-            return policy_details
+        return policy_details
 
 
     def grab_list_of_deployment_info(self, policies_list):
@@ -175,4 +175,5 @@ if __name__ == "__main__":
 
 
     print 'template names: ', ListUtils().grab_template_names(templates_list)
-    print 'template data: ', ListUtils().grab_template_data('MySql Provision Template',templates_list)
+    print 'template data: '
+    ListUtils().grab_template_data('MySql Provision Template',templates_list)
