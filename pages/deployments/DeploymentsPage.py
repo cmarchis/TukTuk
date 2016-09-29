@@ -1,13 +1,19 @@
 from tools.WebdriverBase import WebdriverBase
+import time
 
 RESOURCES_LIST_SELECTOR = 'li[role="listitem"]:not(.grommetux-box--pad-between-small)'
 POLICIES_LIST_SELECTOR = 'div.grommetux-box--pad-small div.grommetux-box--pad-medium:nth-child(2) div.grommetux-box--direction-row:not(.grommetux-box--justify-between)'
+DEPLOYMENT_INFO_SELECTOR = 'div.grommetux-background-color-index-light-1 div.grommetux-box--pad-medium:first-child'
 
 
 class DeploymentsPage(WebdriverBase):
     """
     Mapping for Deployments Tab
     """
+
+    def __init__(self, driver):
+        self.driver = driver
+
     def create_list_of_dictionary_for_resources(self):
         """
         list of dictionary resources. Functionality corresponding to list of resources displayed under the overview.
@@ -37,3 +43,18 @@ class DeploymentsPage(WebdriverBase):
             return_list.append(list_item)
         return return_list
 
+    def create_list_of_dictionary_of_deployment_info(self):
+        """
+
+        :return:
+        """
+        time.sleep(5)
+        deployment_info_list = self.locate_element_by_css_selector(DEPLOYMENT_INFO_SELECTOR)
+        list_item = {}
+        list_item['status'] = deployment_info_list.find_element_by_css_selector(
+            "div:nth-child(1) > div:last-child > h4").text
+        list_item['template'] = deployment_info_list.find_element_by_css_selector(
+            "div:nth-child(2) > div:last-child > h4").text
+        list_item['last_scanned'] = deployment_info_list.find_element_by_css_selector(
+            "div:nth-child(3) > div:last-child > h4").text
+        return list_item
