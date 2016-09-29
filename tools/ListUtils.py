@@ -1,4 +1,5 @@
 from tools.ApiUtils import ApiUtils
+from tools.DateUtils import DateUtils
 
 
 class ListUtils(object):
@@ -136,11 +137,20 @@ class ListUtils(object):
             if template_now['templateName'] == template_name:
                 list_item[]
 
-
         return list_item
+
+    def grab_list_of_deployment_info(self, policies_list):
+        list_item = {}
+        list_item['status'] = policies_list['deployment']['status']
+        list_item['template'] = policies_list['deployment']['templateName']
+        list_item['last_scanned'] = DateUtils().convert_long_to_date(policies_list['deployment']['complianceScore'][
+                                                                         'lastScanDate'])
+        return list_item
+
 
 if __name__ == "__main__":
     policies_list = ApiUtils().grab_policies_json()
+    policies_json = ApiUtils().grab_json()
     templates_list = ApiUtils().grab_templates_json()
     # print "aaa: ", ListUtils().grab_list_of_policies_types(policies_list)
     # list_of_policies_types = ListUtils().grab_list_of_policies_types(policies_list)
@@ -151,4 +161,5 @@ if __name__ == "__main__":
     # print"grab_total: ", ListUtils().grab_total('Best practices', policies_list)
     # print"grab_undefined_policies: ", ListUtils().grab_undefined_policies('Best practices', policies_list)
 
-    print 'template names: ', ListUtils().grab_template_names(templates_list)
+    # print 'template names: ', ListUtils().grab_template_names(templates_list)
+    print "grab_list_of_deployment_info: ", ListUtils().grab_list_of_deployment_info(policies_json)

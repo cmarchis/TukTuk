@@ -19,3 +19,10 @@ class DeploymentsMenuHeaderPage(WebdriverBase):
             if item_now.text == name:
                 item_now.click()
                 break
+
+    def create_list_of_menu_options(self):
+        menu_links_list = self.locate_elements_by_css_selector(MENU_HEADER_CONTAINER_LOCATOR)
+        list_items = []
+        for item_now in menu_links_list:
+            list_items.append(item_now.text)
+        return list_items

@@ -22,6 +22,16 @@ class ApiUtils(object):
 
         return policies_list
 
+    def grab_json(self):
+        """
+        Return a json containing all policies from live api
+        :return:
+        """
+        request = urllib2.Request(policies_url)
+        response = urllib2.urlopen(request)
+        json_object = json.load(response)
+        return json_object
+
     def grab_templates_json(self):
         """
         Return a json containing all templates from live api
