@@ -124,20 +124,31 @@ class ListUtils(object):
         """
         return_list = []
         for template_now in templtes_list:
-            list_item = {}
-            list_item['name'] = template_now['templateName']
-            return_list.append(list_item)
+            # list_item = {}
+            # list_item['name'] = template_now['template']['template']['templateName']
+            return_list.append(template_now['template']['template']['templateName'])
 
         return return_list
 
     def grab_template_data(self, template_name, templtes_list):
-        list_item = {}
+        policy_details = {}
         for template_now in templtes_list:
 
-            if template_now['templateName'] == template_name:
-                list_item[]
+            if template_now['template']['template']['templateName'] == template_name:
+                resource_types = []
+                for resource_now in template_now['template']['template']['resourceTypes']:
+                    resource_types.append(resource_now['resourceName'])
+                policy_details['resourceTypes'] = resource_types
 
-        return list_item
+                policies_list = []
+                for policy_now in template_now['template']['template']['attachedPolicies']:
+                    policies_list.append(policy_now['policy']['name'])
+                policy_details['attachedPolicies'] = policies_list
+
+                policy_details['noOfDeployments'] = template_now['noOfDeployments']
+
+            return policy_details
+
 
     def grab_list_of_deployment_info(self, policies_list):
         list_item = {}
@@ -146,6 +157,7 @@ class ListUtils(object):
         list_item['last_scanned'] = DateUtils().convert_long_to_date(policies_list['deployment']['complianceScore'][
                                                                          'lastScanDate'])
         return list_item
+
 
 
 if __name__ == "__main__":
@@ -161,5 +173,6 @@ if __name__ == "__main__":
     # print"grab_total: ", ListUtils().grab_total('Best practices', policies_list)
     # print"grab_undefined_policies: ", ListUtils().grab_undefined_policies('Best practices', policies_list)
 
-    # print 'template names: ', ListUtils().grab_template_names(templates_list)
-    print "grab_list_of_deployment_info: ", ListUtils().grab_list_of_deployment_info(policies_json)
+
+    print 'template names: ', ListUtils().grab_template_names(templates_list)
+    print 'template data: ', ListUtils().grab_template_data('MySql Provision Template',templates_list)

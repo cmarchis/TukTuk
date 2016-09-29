@@ -24,4 +24,5 @@ class TemplateDetailsPage(WebdriverBase):
             for data_now in data_rows:
                 result_list.append(data_now.text)
 
+        result_list.pop(0)
         return result_list
