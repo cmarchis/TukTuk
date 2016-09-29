@@ -123,21 +123,30 @@ class ListUtils(object):
         """
         return_list = []
         for template_now in templtes_list:
-            list_item = {}
-            list_item['name'] = template_now['templateName']
-            return_list.append(list_item)
+            # list_item = {}
+            # list_item['name'] = template_now['template']['template']['templateName']
+            return_list.append(template_now['template']['template']['templateName'])
 
         return return_list
 
     def grab_template_data(self, template_name, templtes_list):
-        list_item = {}
+        policy_details = {}
         for template_now in templtes_list:
 
-            if template_now['templateName'] == template_name:
-                list_item[]
+            if template_now['template']['template']['templateName'] == template_name:
+                resource_types = []
+                for resource_now in template_now['template']['template']['resourceTypes']:
+                    resource_types.append(resource_now['resourceName'])
+                policy_details['resourceTypes'] = resource_types
 
+                policies_list = []
+                for policy_now in template_now['template']['template']['attachedPolicies']:
+                    policies_list.append(policy_now['policy']['name'])
+                policy_details['attachedPolicies'] = policies_list
 
-        return list_item
+                policy_details['noOfDeployments'] = template_now['noOfDeployments']
+
+        return policy_details
 
 if __name__ == "__main__":
     policies_list = ApiUtils().grab_policies_json()
@@ -152,3 +161,4 @@ if __name__ == "__main__":
     # print"grab_undefined_policies: ", ListUtils().grab_undefined_policies('Best practices', policies_list)
 
     print 'template names: ', ListUtils().grab_template_names(templates_list)
+    print 'template data: ', ListUtils().grab_template_data('MySql Provision Template',templates_list)

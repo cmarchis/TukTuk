@@ -33,7 +33,8 @@ class ApiUtils(object):
         templates_list = []
         # print json_object['templates']['templateDeployments'][0]['template']['template']
         for item_now in json_object['templates']['templateDeployments']:
-            templates_list.append(item_now['template']['template'])
+
+            templates_list.append(item_now)
         return templates_list
 
 
