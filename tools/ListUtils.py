@@ -5,7 +5,7 @@ from tools.DateUtils import DateUtils
 class ListUtils(object):
     def sort_list_alphabetically_by(self, field_key, list):
         """
-        Sort provided list by the values of the given field
+        Sort provided list by the values of the given field_key
         :param field_key:
         :param list:
         :return sorted_list:
@@ -14,6 +14,11 @@ class ListUtils(object):
         return sorted_list
 
     def remove_duplicates_from_list(self, list):
+        """
+        Remove duplicated value from a list.
+        :param list:
+        :return: list with unique values
+        """
         output = []
         seen = set()
         for value in list:
@@ -41,7 +46,7 @@ class ListUtils(object):
 
     def grab_total(self, policy_type, policies_list):
         """
-        From the policies list, return the total tests from policies with the same type
+        From the policies list, return the total tests (from complianceScore) for policies with the same type
         :param policy_type:
         :param policies_list:
         :return: total
@@ -131,6 +136,12 @@ class ListUtils(object):
         return return_list
 
     def grab_template_data(self, template_name, templtes_list):
+        """
+        Grabbes template date as displayed on the template details page.
+        :param template_name:
+        :param templtes_list:
+        :return list(item{resourceTypes[],attachedPolicies[],noOfDeployments},...):
+        """
         policy_details = {}
         for template_now in templtes_list:
 
@@ -150,11 +161,16 @@ class ListUtils(object):
         return policy_details
 
 
-    def grab_list_of_deployment_info(self, policies_list):
+    def grab_list_of_deployment_info(self, json):
+        """
+        From json grabbed from api, returns a list of deployment info
+        :param policies_list:
+        :return:
+        """
         list_item = {}
-        list_item['status'] = policies_list['deployment']['status']
-        list_item['template'] = policies_list['deployment']['templateName']
-        list_item['last_scanned'] = DateUtils().convert_long_to_date(policies_list['deployment']['complianceScore'][
+        list_item['status'] = json['deployment']['status']
+        list_item['template'] = json['deployment']['templateName']
+        list_item['last_scanned'] = DateUtils().convert_long_to_date(json['deployment']['complianceScore'][
                                                                          'lastScanDate'])
         return list_item
 
@@ -164,6 +180,7 @@ if __name__ == "__main__":
     policies_list = ApiUtils().grab_policies_json()
     policies_json = ApiUtils().grab_json()
     templates_list = ApiUtils().grab_templates_json()
+    print "grab_list_of_deployment_info",ListUtils().grab_list_of_deployment_info(policies_json)
     # print "aaa: ", ListUtils().grab_list_of_policies_types(policies_list)
     # list_of_policies_types = ListUtils().grab_list_of_policies_types(policies_list)
     # for element in list_of_policies_types:
@@ -174,6 +191,3 @@ if __name__ == "__main__":
     # print"grab_undefined_policies: ", ListUtils().grab_undefined_policies('Best practices', policies_list)
 
 
-    print 'template names: ', ListUtils().grab_template_names(templates_list)
-    print 'template data: '
-    ListUtils().grab_template_data('MySql Provision Template',templates_list)

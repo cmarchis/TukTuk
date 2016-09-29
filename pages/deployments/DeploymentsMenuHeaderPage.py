@@ -6,12 +6,12 @@ MENU_HEADER_CONTAINER_LOCATOR = 'div.grommetux-box--justify-end button'
 
 class DeploymentsMenuHeaderPage(WebdriverBase):
     """
-    Actions related to Deployments top action bar
+    Actions related to Deployments top action bar.
     """
 
     def click_on_header_menu_item(self, name):
         """
-        Will select a menu item from the Left side navigation. A label name should be provided.
+        Will select a menu item from the menu navigation side. A label name should be provided.
         :param name:
         :return:
         """
@@ -22,6 +22,10 @@ class DeploymentsMenuHeaderPage(WebdriverBase):
                 break
 
     def create_list_of_menu_options(self):
+        """
+        Create a list of menu options name.
+        :return: list of menu options name (ex: ['Scan Compliance'],...)
+        """
         menu_links_list = self.locate_elements_by_css_selector(MENU_HEADER_CONTAINER_LOCATOR)
         list_items = []
         for item_now in menu_links_list:

@@ -24,7 +24,7 @@ class ApiUtils(object):
 
     def grab_json(self):
         """
-        Return a json containing all policies from live api
+        Return the json grabbed from api
         :return:
         """
         request = urllib2.Request(policies_url)

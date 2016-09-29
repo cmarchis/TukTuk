@@ -1,5 +1,4 @@
 from tools.WebdriverBase import WebdriverBase
-import time
 
 RESOURCES_LIST_SELECTOR = 'li[role="listitem"]:not(.grommetux-box--pad-between-small)'
 POLICIES_LIST_SELECTOR = 'div.grommetux-box--pad-small div.grommetux-box--pad-medium:nth-child(2) div.grommetux-box--direction-row:not(.grommetux-box--justify-between)'
@@ -42,10 +41,9 @@ class DeploymentsPage(WebdriverBase):
 
     def create_list_of_dictionary_of_deployment_info(self):
         """
-
-        :return:
+        list of dictionary for deployment info.
+        :return: list{'status': 'SUCCESS', 'last_scanned': 'September 26, 2016', 'template': 'Oracle'}
         """
-        time.sleep(5)
         deployment_info_list = self.locate_element_by_css_selector(DEPLOYMENT_INFO_SELECTOR)
         list_item = {}
         list_item['status'] = deployment_info_list.find_element_by_css_selector(
