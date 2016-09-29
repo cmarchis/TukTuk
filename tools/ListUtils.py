@@ -165,7 +165,7 @@ class ListUtils(object):
         """
         From json grabbed from api, returns a list of deployment info
         :param policies_list:
-        :return:
+        :return: list{'status': 'SUCCESS','template': 'Oracle', 'last_scanned':'September 26, 2016'}
         """
         list_item = {}
         list_item['status'] = json['deployment']['status']
