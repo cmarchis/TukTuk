@@ -3,6 +3,7 @@ from tools.WebdriverBase import WebdriverBase
 RESOURCES_LIST_SELECTOR = 'li[role="listitem"]:not(.grommetux-box--pad-between-small)'
 POLICIES_LIST_SELECTOR = 'div.grommetux-box--pad-small div.grommetux-box--pad-medium:nth-child(2) div.grommetux-box--direction-row:not(.grommetux-box--justify-between)'
 DEPLOYMENT_INFO_SELECTOR = 'div.grommetux-background-color-index-light-1 div.grommetux-box--pad-medium:first-child'
+POLICIES_BAR_LIST_SELECTOR = 'div[class="grommetux-box grommetux-box--direction-row grommetux-box--responsive grommetux-box--pad-none"]'
 
 
 class DeploymentsPage(WebdriverBase):
@@ -53,3 +54,45 @@ class DeploymentsPage(WebdriverBase):
         list_item['last_scanned'] = deployment_info_list.find_element_by_css_selector(
             "div:nth-child(3) > div:last-child > h4").text
         return list_item
+
+    def create_list_of_policies_dimensions_bar(self):
+        """
+        For every policies types that is displayed creates a list of bar dimensions
+        :return: [{'blue': 57, 'gray': 36, 'type': u'Policy type', 'red': 72, 'yellow': 29},{...}]
+        """
+        policies_bar_list = self.locate_elements_by_css_selector(POLICIES_BAR_LIST_SELECTOR)
+        return_list = []
+        for item in policies_bar_list:
+            list_item = {}
+            list_item['type'] = item.find_element_by_css_selector('label').text
+            path_list = item.find_elements_by_css_selector("g.grommetux-meter__values g path.grommetux-meter__slice")
+            for path in path_list:
+                class_atribute = path.get_attribute("class")
+                if "accent" in class_atribute:
+                    value = path.get_attribute("d")
+                    list_item['blue'] = self.return_bar_dimension(value)
+                if "warning" in class_atribute:
+                    value = path.get_attribute("d")
+                    list_item['yellow'] = self.return_bar_dimension(value)
+                if "critical" in class_atribute:
+                    value = path.get_attribute("d")
+                    list_item['red'] = self.return_bar_dimension(value)
+                if "unset" in class_atribute:
+                    value = path.get_attribute("d")
+                    list_item['gray'] = self.return_bar_dimension(value)
+            return_list.append(list_item)
+        return return_list
+
+    def return_bar_dimension(self, value):
+        """
+        Return bar dimension by calculating it from html 'd' attribute value of each bar.
+        :param value:
+        :return: dimension
+        """
+        split_value = value.split(" ")
+        first_value_splited = split_value[0].split("M")
+        first_value = first_value_splited[1]
+        second_value_splited = split_value[1].split("L")
+        second_value = second_value_splited[1]
+        dimension = int(float(second_value.replace(',', '.')) - float(first_value.replace(',', '.')))
+        return dimension
