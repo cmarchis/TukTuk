@@ -56,7 +56,6 @@ class ViewDeploymentComplianceStatusOverviewTest(unittest.TestCase):
                                        self.api_resource_list_with_status, aplication_resources_list_with_status)
 
         aplication_policies_dimensions_bar_list = deployment_page.create_list_of_policies_dimensions_bar()
-        print"aaa: ",aplication_policies_dimensions_bar_list
 
         SoftAssert().verfy_equals_true("List of dimension bar doesn't matched ",
                                        self.api_policies_dimensions_bar_list, aplication_policies_dimensions_bar_list)
