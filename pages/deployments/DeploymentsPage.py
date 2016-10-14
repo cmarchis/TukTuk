@@ -4,6 +4,7 @@ RESOURCES_LIST_SELECTOR = 'li[role="listitem"]:not(.grommetux-box--pad-between-s
 POLICIES_LIST_SELECTOR = 'div.grommetux-box--pad-small div.grommetux-box--pad-medium:nth-child(2) div.grommetux-box--direction-row:not(.grommetux-box--justify-between)'
 DEPLOYMENT_INFO_SELECTOR = 'div.grommetux-background-color-index-light-1 div.grommetux-box--pad-medium:first-child'
 POLICIES_BAR_LIST_SELECTOR = 'div[class="grommetux-box grommetux-box--direction-row grommetux-box--responsive grommetux-box--pad-none"]'
+NOTIFICATION_CONTAINER = 'section.grommetux-section'
 
 
 class DeploymentsPage(WebdriverBase):
