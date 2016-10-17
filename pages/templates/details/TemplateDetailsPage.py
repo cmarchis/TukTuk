@@ -2,6 +2,7 @@ from tools.WebdriverBase import WebdriverBase
 
 
 GROUP_CONTAINERS = '.grommetux-box--pad-small'
+DEPLOYMENT_CONTAINER = 'div.grommetux-box--pad-small:last-child ul ul li'
 
 class TemplateDetailsPage(WebdriverBase):
     """
@@ -26,3 +27,15 @@ class TemplateDetailsPage(WebdriverBase):
 
         result_list.pop(0)
         return result_list
+
+    def select_deployment(self,deployment_name):
+        deployments_list = self.locate_elements_by_css_selector(DEPLOYMENT_CONTAINER)
+        for deployment in deployments_list:
+            list_deployment_name=deployment.find_element_by_css_selector('div:first-child').text
+            if list_deployment_name == deployment_name:
+                deployment.click()
+                break
+
+
+
+

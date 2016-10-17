@@ -29,7 +29,19 @@ class DeploymentsMenuHeaderPage(WebdriverBase):
         menu_links_list = self.locate_elements_by_css_selector(MENU_HEADER_CONTAINER_LOCATOR)
         list_items = []
         for item_now in menu_links_list:
-            text=item_now.find_element_by_css_selector("span svg title span").text
-            button_text=re.sub(text,'',item_now.text)
+            text = item_now.find_element_by_css_selector("span svg title span").text
+            button_text = re.sub(text, '', item_now.text)
             list_items.append(button_text)
         return list_items
+
+    def get_menu_option_state(self):
+        found = True
+        menu_links_list = self.locate_elements_by_css_selector(MENU_HEADER_CONTAINER_LOCATOR)
+        for item_now in menu_links_list:
+            if item_now.get_attribute("disabled") != 'true':
+                found = False
+        if found != False:
+            return_state = "Disabled"
+        else:
+            return_state = "Active"
+        return return_state

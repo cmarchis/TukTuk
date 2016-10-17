@@ -97,3 +97,7 @@ class DeploymentsPage(WebdriverBase):
         second_value = second_value_splited[1]
         dimension = int(float(second_value.replace(',', '.')) - float(first_value.replace(',', '.')))
         return dimension
+
+    def get_notification_message(self):
+        message = self.locate_element_by_css_selector('span.grommetux-notification__message').text
+        return message
