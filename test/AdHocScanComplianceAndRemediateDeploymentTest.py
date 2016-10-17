@@ -13,6 +13,9 @@ from tools.ApiUtils import ApiUtils
 
 
 class AdHocScanComplianceAndRemediateDeploymentTest(unittest.TestCase):
+    """
+
+    """
     def setUp(self):
         self.expected_scan_message = 'SCAN in progress'
         self.expected_remediate_message = 'REMEDIATE in progress'
@@ -45,7 +48,7 @@ class AdHocScanComplianceAndRemediateDeploymentTest(unittest.TestCase):
                                        self.expected_scan_message, aplication_notification_message)
 
         aplication_menu_option_state = deployment_menu_header_page.get_menu_option_state()
-        SoftAssert().verfy_equals_true("Menu option state isn't as expected",
+        SoftAssert().verfy_equals_true("Menu options aren't disable",
                                        self.expected_menu_option_state, aplication_menu_option_state)
 
         deployment_page.wait_until_notification_disappear()
@@ -55,7 +58,7 @@ class AdHocScanComplianceAndRemediateDeploymentTest(unittest.TestCase):
         SoftAssert().verfy_equals_true("Remediate message isn't being displayed properly",
                                        self.expected_remediate_message, aplication_notification_message)
         aplication_menu_option_state = deployment_menu_header_page.get_menu_option_state()
-        SoftAssert().verfy_equals_true("Menu option state isn't as expected",
+        SoftAssert().verfy_equals_true("Menu options aren't disable",
                                        self.expected_menu_option_state, aplication_menu_option_state)
 
         self.assertEqual(SoftAssert().failures_size(), 0, str(SoftAssert().failures_list()))
