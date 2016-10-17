@@ -1,7 +1,7 @@
 from __future__ import division
 from tools.ApiUtils import ApiUtils
 from tools.DateUtils import DateUtils
-from decimal import *
+import random
 
 
 class ListUtils(object):
@@ -25,6 +25,14 @@ class ListUtils(object):
                 output.append(value)
                 seen.add(value)
         return output
+
+    def return_random_from_list(self, list):
+        """
+        Return a random element from a list.
+        :param list:
+        :return:
+        """
+        return random.choice(list)
 
     def create_list_of_policies_model(self, policies_list, policies_type_list):
         """
@@ -212,8 +220,6 @@ class ListUtils(object):
         """
         return_list = []
         for template_now in templtes_list:
-            # list_item = {}
-            # list_item['name'] = template_now['template']['template']['templateName']
             return_list.append(template_now['template']['template']['templateName'])
 
         return return_list
@@ -255,11 +261,27 @@ class ListUtils(object):
                                                                          'lastScanDate'])
         return list_item
 
+    def grab_deployment_list(self, template_name, templtes_list):
+        """
+        From json grabbed from api, return a list of deployments name for a given template
+        :param template_name:
+        :param templtes_list:
+        :return:
+        """
+        deployment_list = []
+        for template_now in templtes_list:
+            if template_now['template']['template']['templateName'] == template_name:
+                for resource_now in template_now['deploymentDetails']:
+                    deployment_list.append(resource_now['deployment']['deploymentName'])
+
+        return deployment_list
+
 
 if __name__ == "__main__":
-    policies_list = ApiUtils().grab_policies_json()
-    policies_json = ApiUtils().grab_json()
+    # policies_list = ApiUtils().grab_policies_json()
+    # policies_json = ApiUtils().grab_json()
     templates_list = ApiUtils().grab_templates_json()
 
-    print "aaa: ", ListUtils().create_list_of_policies_bar_dimensions(['Best practices', 'Practices'], policies_list,
-                                                                      192)
+    print"templates_list: ", templates_list
+
+    print "aaa: ", ListUtils().grab_deployment_list('3 - MySql Provision Template', templates_list)

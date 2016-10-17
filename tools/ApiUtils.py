@@ -1,7 +1,7 @@
 import urllib2, json
 from decimal import *
 
-policies_url = 'http://localhost:8010/urest/v1/deployments/d10c819a-0fb1-4910-8747-38ccb5f7f3e3'
+policies_url = 'http://localhost:8010/urest/v1/deployments'
 templates_url = 'http://localhost:8010/urest/v1/templates'
 
 
@@ -49,12 +49,8 @@ class ApiUtils(object):
 
 
 if __name__ == "__main__":
-    # print "grab_policies_json: ", ApiUtils().grab_policies_json()
+    print "grab_policies_json: ", ApiUtils().grab_json()
     # print "grab_templates_json: ", ApiUtils().grab_templates_json()
     # print "grab_templates_json len: ", len(ApiUtils().grab_templates_json())
 
-    a = 192
-    b = 29
-    c = 100
-    print (Decimal(a) * Decimal(b))/ Decimal(100)
 

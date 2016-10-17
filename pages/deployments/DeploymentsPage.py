@@ -1,16 +1,20 @@
 from tools.WebdriverBase import WebdriverBase
+import time
 
 RESOURCES_LIST_SELECTOR = 'li[role="listitem"]:not(.grommetux-box--pad-between-small)'
 POLICIES_LIST_SELECTOR = 'div.grommetux-box--pad-small div.grommetux-box--pad-medium:nth-child(2) div.grommetux-box--direction-row:not(.grommetux-box--justify-between)'
 DEPLOYMENT_INFO_SELECTOR = 'div.grommetux-background-color-index-light-1 div.grommetux-box--pad-medium:first-child'
 POLICIES_BAR_LIST_SELECTOR = 'div[class="grommetux-box grommetux-box--direction-row grommetux-box--responsive grommetux-box--pad-none"]'
-NOTIFICATION_CONTAINER = 'section.grommetux-section'
+NOTIFICATION_CONTAINER_SELECTOR = 'section.grommetux-section'
 
 
 class DeploymentsPage(WebdriverBase):
     """
     Mapping for Deployments Tab
     """
+
+    def __init__(self, driver):
+        self.driver = driver
 
     def create_list_of_dictionary_for_resources(self):
         """
@@ -99,5 +103,26 @@ class DeploymentsPage(WebdriverBase):
         return dimension
 
     def get_notification_message(self):
+        """
+        When is displayed, grab notification message
+        :return:
+        """
         message = self.locate_element_by_css_selector('span.grommetux-notification__message').text
         return message
+
+    def get_container_number(self):
+        """
+        Return the number of containers that are displayed to verify if notification message container is displayed
+        :return:
+        """
+        container_list = self.locate_elements_by_css_selector(
+            '.grommetux-box--pad-vertical-small.grommetux-background-color-index-light-2 > *')
+        return len(container_list)
+
+    def wait_until_notification_disappear(self):
+        """
+        Wait until notification message container disappear
+        :return:
+        """
+        while self.get_container_number() != 1:
+            time.sleep(1)
