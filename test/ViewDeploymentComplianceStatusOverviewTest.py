@@ -50,19 +50,26 @@ class ViewDeploymentComplianceStatusOverviewTest(unittest.TestCase):
         random_deployment_list = ListUtils().return_random_from_list(self.deployment_list)
         self.random_deploymentName = random_deployment_list.get('deploymentName')
         self.random_deploymentID = random_deployment_list.get('deploymentId')
-        self.api_deployment_info = ListUtils().grab_list_of_deployment_info(self.random_deploymentID,
-                                                                            self.templtes_json)
+
         print "random_deploymentName: ", self.random_deploymentName
 
-        api_policy_types_list = ListUtils().grab_list_of_policies_types('6170',self.templtes_json)
-        print "api_policy_types_list: ",api_policy_types_list
+        self.api_policy_types_list = ListUtils().grab_list_of_policies_types(self.random_deploymentID,
+                                                                             self.templtes_json)
+        print "api_policy_types_list: ", self.api_policy_types_list
 
-        no_duplicate_policy_type_list = ListUtils().remove_duplicates_from_list(api_policy_types_list)
-        policies_model_list = ListUtils().create_list_of_policies_model(self.templtes_json,
+        no_duplicate_policy_type_list = ListUtils().remove_duplicates_from_list(self.api_policy_types_list)
+        policies_model_list = ListUtils().create_list_of_policies_model(self.random_deploymentID,
+                                                                        self.templtes_json,
                                                                         no_duplicate_policy_type_list)
+        self.api_sorted_policies_model_list = ListUtils().sort_list_alphabetically_by('type', policies_model_list)
+        print "policies_model_list: ", self.api_sorted_policies_model_list
 
-        print "policies_model_list: ",policies_model_list
-
+        self.api_resource_list_with_status = ListUtils().grab_list_of_resources_with_status(self.random_deploymentID,
+                                                                                            self.templtes_json)
+        aplication_bar_dimension = 192
+        self.api_policies_dimensions_bar_list = ListUtils().create_list_of_policies_bar_dimensions(
+            self.random_deploymentID, no_duplicate_policy_type_list, self.templtes_json, aplication_bar_dimension)
+        print "self.api_policies_dimensions_bar_list: ", self.api_policies_dimensions_bar_list
 
         self.browser = DriverUtils().start_driver()
 
@@ -82,10 +89,9 @@ class ViewDeploymentComplianceStatusOverviewTest(unittest.TestCase):
                                                                            deployment_page.create_list_of_dictionary_for_policies())
 
         SoftAssert().verfy_equals_true("List of policies doesn't matched ",
-                                       self.api_policies_list, aplication_policies_list)
+                                       self.api_sorted_policies_model_list, aplication_policies_list)
 
-        aplication_resources_list_with_status = ListUtils().sort_list_alphabetically_by('name',
-                                                                                        deployment_page.create_list_of_dictionary_for_resources())
+        aplication_resources_list_with_status = deployment_page.create_list_of_dictionary_for_resources()
 
         SoftAssert().verfy_equals_true("List of resources doesn't matched ",
                                        self.api_resource_list_with_status, aplication_resources_list_with_status)

@@ -19,7 +19,7 @@ class AdHocScanComplianceAndRemediateDeploymentTest(unittest.TestCase):
                                    - the list of jobs for chosen deployment
                                    - the last scan/remediate date
     Test is navigating to the chosen template and deployment and select Scan Compliance and Remediate menu action.
-     After selecting those two option is validating:
+     After selecting those two option test is validating:
         - the pop up message that is displayed after those action contains expected message
         - the started date that is displayed in the pop up message matches with the date grabbed from deployment jobs json
         - that in the time that pop up message is displayed the menu options are disabled
