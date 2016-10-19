@@ -34,9 +34,6 @@ class ViewTemplatesTest(unittest.TestCase):
 
         template_details = TemplateDetailsPage(self.browser)
 
-        # print template_details.grab_resources_data()
-        # print template_details.grab_policies_data()
-        # print template_details.grab_deployments_data()
         print "Resources List"
         print self.template_data['resourceTypes']
         print template_details.grab_resources_data()
@@ -54,14 +51,6 @@ class ViewTemplatesTest(unittest.TestCase):
         SoftAssert().verfy_equals_true("Number of deploys does not match", self.template_data['noOfDeployments'],
                                        len(template_details.grab_deployments_data()))
 
-        # template_actions = TemplatActionsPage(self.browser)
-        # print template_actions.grab_actions_label()
-        # template_actions.click_deploy()
-        # time.sleep(5)
-        # self.browser.back()
-        # time.sleep(5)
-        # template_actions.click_schedule()
-        # time.sleep(5)
         self.assertEqual(SoftAssert().failures_size(), 0, str(SoftAssert().failures_list()))
 
     def tearDown(self):
