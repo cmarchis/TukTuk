@@ -58,6 +58,8 @@ class DeploymentsPage(WebdriverBase):
             "div:nth-child(2) > div:last-child > h4").text
         list_item['last_scanned'] = deployment_info_list.find_element_by_css_selector(
             "div:nth-child(3) > div:last-child > h4").text
+        list_item['compliant'] = deployment_info_list.find_element_by_css_selector(
+            "div:nth-child(4) > div:last-child > h4").text
         return list_item
 
     def create_list_of_policies_dimensions_bar(self):
@@ -110,6 +112,18 @@ class DeploymentsPage(WebdriverBase):
         message = self.locate_element_by_css_selector('span.grommetux-notification__message').text
         return message
 
+    def get_notification_date(self):
+        """
+        When is displayed, grab notification message
+        :return:
+        """
+        message = self.locate_element_by_css_selector(
+            'div.grommetux-box--pad-horizontal-small span:first-child span:first-child').text
+        date = self.locate_element_by_css_selector(
+            'div.grommetux-box--pad-horizontal-small span:first-child span:last-child').text
+        complete_message = message + ' ' + date
+        return complete_message
+
     def get_container_number(self):
         """
         Return the number of containers that are displayed to verify if notification message container is displayed
@@ -124,5 +138,7 @@ class DeploymentsPage(WebdriverBase):
         Wait until notification message container disappear
         :return:
         """
-        while self.get_container_number() != 1:
+        i = 0
+        while self.get_container_number() != 1 or i < 20:
             time.sleep(1)
+            i += 1

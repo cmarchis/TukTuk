@@ -47,9 +47,21 @@ class ApiUtils(object):
             templates_list.append(item_now)
         return templates_list
 
+    def grab_job_json(self,deployment_id):
+        """
+        Return the json grabbed from api
+        :return:
+        """
+        request = urllib2.Request('http://localhost:8010/urest/v1/deployments/'+deployment_id+'/job')
+        response = urllib2.urlopen(request)
+        json_object = json.load(response)
+        return json_object
+
+
 
 if __name__ == "__main__":
-    print "grab_policies_json: ", ApiUtils().grab_json()
+    # print "grab_policies_json: ", ApiUtils().grab_json()
+    print "job : ", ApiUtils().grab_job_json('6170')
     # print "grab_templates_json: ", ApiUtils().grab_templates_json()
     # print "grab_templates_json len: ", len(ApiUtils().grab_templates_json())
 

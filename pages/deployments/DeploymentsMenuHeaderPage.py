@@ -29,9 +29,8 @@ class DeploymentsMenuHeaderPage(WebdriverBase):
         menu_links_list = self.locate_elements_by_css_selector(MENU_HEADER_CONTAINER_LOCATOR)
         list_items = []
         for item_now in menu_links_list:
-            text = item_now.find_element_by_css_selector("span svg title span").text
-            button_text = re.sub(text, '', item_now.text)
-            list_items.append(button_text)
+            text = item_now.text
+            list_items.append(text)
         return list_items
 
     def get_menu_option_state(self):

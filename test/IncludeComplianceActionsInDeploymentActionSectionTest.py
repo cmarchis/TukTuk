@@ -3,12 +3,16 @@ import unittest
 from pages.MenuNavigationPage import MenuNavigationPage
 from pages.deployments.DeploymentsPage import DeploymentsPage
 from pages.deployments.DeploymentsMenuHeaderPage import DeploymentsMenuHeaderPage
-from tools import ListUtils, ApiUtils
+from pages.templates.TemplatesMenuListPage import TemplatesMenuListPage
+from pages.templates.details.TemplateDetailsPage import TemplateDetailsPage
+
 from tools.ApiUtils import ApiUtils
 from tools.DriverUtils import DriverUtils
 from tools.ListUtils import ListUtils
 from tools.SoftAssert import SoftAssert
 
+
+# random_deploymentName:  3 - Sample Deployment
 
 class IncludeComplianceActionsInDeploymentActionSectionTest(unittest.TestCase):
     """
@@ -19,18 +23,34 @@ class IncludeComplianceActionsInDeploymentActionSectionTest(unittest.TestCase):
     the same as those from API call. A list of dictionary grabbed from interface is compared with a list of dictionary
     grabbed from API call.
     """
-    def setUp(self):
-        self.json_list = ApiUtils().grab_json()
-        self.api_deployment_info = ListUtils().grab_list_of_deployment_info(self.json_list)
-        self.expected_menu_option_list=['Scan Compliance', 'Remediate', 'Change Template']
 
+    def setUp(self):
+        self.expected_menu_option_list = ['Scan Compliance', 'Remediate', 'Change Template']
+        self.templtes_json = ApiUtils().grab_templates_json()
+        self.list_of_templates = ListUtils().grab_template_names_and_id(self.templtes_json)
+        random_template_list = ListUtils().return_random_from_list(self.list_of_templates)
+        self.random_templateID = random_template_list.get('templateID')
+        self.random_templateName = random_template_list.get('templateName')
+
+        self.deployment_list = ListUtils().grab_deployment_name_and_id(self.random_templateID, self.templtes_json)
+        random_deployment_list = ListUtils().return_random_from_list(self.deployment_list)
+        self.random_deploymentName = random_deployment_list.get('deploymentName')
+        self.random_deploymentID = random_deployment_list.get('deploymentId')
+        self.api_deployment_info = ListUtils().grab_list_of_deployment_info(self.random_deploymentID,
+                                                                            self.templtes_json)
+        print "random_deploymentName: ", self.random_deploymentName
         self.browser = DriverUtils().start_driver()
 
     def test_IncludeComplianceActionsInDeploymentActionSectionTest(self):
         menu_navigation_page = MenuNavigationPage(self.browser)
         menu_navigation_page.navigate_to("http://localhost:8014/provision")
         menu_navigation_page.navigate_to("http://localhost:8014/provision")
-        menu_navigation_page.click_on_menu_item("Deployments")
+        templates_menu_list_page = TemplatesMenuListPage(self.browser)
+        templates_menu_list_page.click_on_template_item(self.random_templateName)
+
+        template_details_page = TemplateDetailsPage(self.browser)
+        template_details_page.select_deployment(self.random_deploymentName)
+
         deployment_page = DeploymentsPage(self.browser)
         aplication_deployment_info = deployment_page.create_list_of_dictionary_of_deployment_info()
         deployments_menu_header_page = DeploymentsMenuHeaderPage(self.browser)
@@ -38,7 +58,6 @@ class IncludeComplianceActionsInDeploymentActionSectionTest(unittest.TestCase):
 
         SoftAssert().verfy_equals_true("List of menu option doesn't matched ",
                                        aplication_menu_options_list, self.expected_menu_option_list)
-
 
         SoftAssert().verfy_equals_true("List of deployments info doesn't matched ",
                                        aplication_deployment_info, self.api_deployment_info)

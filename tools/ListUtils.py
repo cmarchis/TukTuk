@@ -158,26 +158,45 @@ class ListUtils(object):
                     'noncompliantOutRSLO']
         return sum
 
-    def grab_list_of_policies_types(self, policies_list):
+    def grab_list_of_policies_types(self, deployment_id, templtes_list):
         """
         From policies list, return the list of policy type names
         :return: list(policy_name,...)
         """
         list = []
-        for policy_now in policies_list:
-            if policy_now['policyType']['name'] != None:
-                list.append(policy_now['policyType']['name'])
+        for template_now in templtes_list:
+            print "template_now"
+            for details in template_now['deploymentDetails']:
+                print "details"
+                if details['deployment']['deploymentId'] == deployment_id:
+                    print "if"
+                    for policies in details['deployment']['attachedPolicies']:
+                        print "policies"
+                        list.append(policies['policy']['policyType']['name'])
+                    break
+
         return list
 
-    def grab_total_of_same_policy_type(self, policy_type, policies_list):
+    def grab_total_of_same_policy_type(self, deployment_id, policy_type, templtes_list):
         """
         From the policies list, return the number of policies items with the same type
         :return: total
         """
+        # sum = 0
+        # for policy_now in policies_list:
+        #     if policy_now['policyType']['name'] == policy_type:
+        #         sum += 1
+        # return sum
+
         sum = 0
-        for policy_now in policies_list:
-            if policy_now['policyType']['name'] == policy_type:
-                sum += 1
+        for template_now in templtes_list:
+            for details in template_now['deploymentDetails']:
+                if details['deployment']['deploymentId'] == deployment_id:
+                    for policies in details['deployment']['attachedPolicies']:
+                        if policies['policy']['policyType']['name'] == policy_type:
+                            sum += 1
+                            break
+
         return sum
 
     def grab_undefined_policies(self, policy_type, policies_list):
@@ -213,14 +232,17 @@ class ListUtils(object):
             return_list.append(list_item)
         return return_list
 
-    def grab_template_names(self, templtes_list):
+    def grab_template_names_and_id(self, templtes_list):
         """
-        From list of templates, returns a list of template names as a result
-        :return list(item[name],...):
+        From list of templates, returns a list of dictionary with template names and ids as a result
+        :return list(item{templateName,id},...):
         """
         return_list = []
         for template_now in templtes_list:
-            return_list.append(template_now['template']['template']['templateName'])
+            list_item = {}
+            list_item['templateName'] = template_now['template']['template']['templateName']
+            list_item['templateID'] = template_now['template']['template']['templateID']
+            return_list.append(list_item)
 
         return return_list
 
@@ -249,19 +271,26 @@ class ListUtils(object):
 
         return policy_details
 
-    def grab_list_of_deployment_info(self, json):
+    def grab_list_of_deployment_info(self, deployment_id, templtes_list):
         """
         From json grabbed from api, returns a list of deployment info
         :return: list{'status': 'SUCCESS','template': 'Oracle', 'last_scanned':'September 26, 2016'}
         """
         list_item = {}
-        list_item['status'] = json['deployment']['status']
-        list_item['template'] = json['deployment']['templateName']
-        list_item['last_scanned'] = DateUtils().convert_long_to_date(json['deployment']['complianceScore'][
-                                                                         'lastScanDate'])
+        for template_now in templtes_list:
+            for details in template_now['deploymentDetails']:
+                if details['deployment']['deploymentId'] == deployment_id:
+                    list_item['status'] = details['deployment']['status']
+                    list_item['template'] = details['deployment']['templateName']
+                    list_item['last_scanned'] = DateUtils().convert_long_to_date(
+                        details['deployment']['complianceScore']['lastScanDate'])
+                    list_item['compliant'] = str(
+                        details['deployment']['complianceScore']['compliantPolicies']) + ' of ' + \
+                                             str(details['deployment']['complianceScore'][
+                                                     'totalPolicies']) + ' Compliant'
         return list_item
 
-    def grab_deployment_list(self, template_name, templtes_list):
+    def grab_deployment_name_and_id(self, template_id, templtes_list):
         """
         From json grabbed from api, return a list of deployments name for a given template
         :param template_name:
@@ -270,18 +299,37 @@ class ListUtils(object):
         """
         deployment_list = []
         for template_now in templtes_list:
-            if template_now['template']['template']['templateName'] == template_name:
+            list_item = {}
+            if template_now['template']['template']['templateID'] == template_id:
                 for resource_now in template_now['deploymentDetails']:
-                    deployment_list.append(resource_now['deployment']['deploymentName'])
-
+                    list_item['deploymentName'] = resource_now['deployment']['deploymentName']
+                    list_item['deploymentId'] = resource_now['deployment']['deploymentId']
+                    deployment_list.append(list_item)
         return deployment_list
+
+    def get_last_remediate_scan_date(self, jobs_json):
+        list_remediate = []
+        list_scan = []
+        for job in jobs_json:
+            if job['type'] == "REMEDIATE":
+                list_remediate.append(job['startDT'])
+            if job['type'] == "SCAN":
+                list_scan.append(job['startDT'])
+        if len(list_remediate) != 0:
+            return DateUtils().convert_long_to_date(min(list_remediate))
+        else:
+            return DateUtils().convert_long_to_date(min(list_scan))
 
 
 if __name__ == "__main__":
     # policies_list = ApiUtils().grab_policies_json()
     # policies_json = ApiUtils().grab_json()
-    templates_list = ApiUtils().grab_templates_json()
+    # templates_list = ApiUtils().grab_templates_json()
 
-    print"templates_list: ", templates_list
+    # aaa = ListUtils().grab_list_of_policies_types('6170', templates_list)
+    # bbb = ListUtils().grab_total_of_same_policy_type('6170','PolicyType1',templates_list)
+    # print "aaa: ", aaa
+    # print "bbb: ", bbb
 
-    print "aaa: ", ListUtils().grab_deployment_list('3 - MySql Provision Template', templates_list)
+    jobs_list = ApiUtils().grab_job_json('6170')
+    print "a: ", ListUtils().get_last_remediate_scan_date(jobs_list)
