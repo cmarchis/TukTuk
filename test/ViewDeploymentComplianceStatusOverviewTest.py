@@ -24,32 +24,20 @@ class ViewDeploymentComplianceStatusOverviewTest(unittest.TestCase):
     """
 
     def setUp(self):
-        # self.policies_list = ApiUtils().grab_templates_json()
-        # api_policy_types_list = ListUtils().grab_list_of_policies_types(self.policies_list)
-        # no_duplicate_policy_type_list = ListUtils().remove_duplicates_from_list(api_policy_types_list)
-        # policies_model_list = ListUtils().create_list_of_policies_model(self.policies_list,
-        #                                                                 no_duplicate_policy_type_list)
-
-
-        # self.api_policies_list = ListUtils().sort_list_alphabetically_by('type', policies_model_list)
-        # self.api_resource_list_with_status = ListUtils().sort_list_alphabetically_by('name',
-        #                                                                              ListUtils().grab_list_of_resources_with_status(
-        #                                                                                  self.policies_list))
-        # aplication_bar_dimension = 192
-        # self.api_policies_dimensions_bar_list = ListUtils().create_list_of_policies_bar_dimensions(
-        #     no_duplicate_policy_type_list, self.policies_list, aplication_bar_dimension)
-
-
         self.templtes_json = ApiUtils().grab_templates_json()
         self.list_of_templates = ListUtils().grab_template_names_and_id(self.templtes_json)
         random_template_list = ListUtils().return_random_from_list(self.list_of_templates)
         self.random_templateID = random_template_list.get('templateID')
         self.random_templateName = random_template_list.get('templateName')
+        # self.random_templateID = 1234
+        # self.random_templateName = '1 - Oracle Provision Template'
 
         self.deployment_list = ListUtils().grab_deployment_name_and_id(self.random_templateID, self.templtes_json)
         random_deployment_list = ListUtils().return_random_from_list(self.deployment_list)
         self.random_deploymentName = random_deployment_list.get('deploymentName')
         self.random_deploymentID = random_deployment_list.get('deploymentId')
+        # self.random_deploymentName = '1 - Sample Deployment'
+        # self.random_deploymentID = 1234
 
         print "random_deploymentName: ", self.random_deploymentName
 
@@ -67,8 +55,12 @@ class ViewDeploymentComplianceStatusOverviewTest(unittest.TestCase):
         self.api_resource_list_with_status = ListUtils().grab_list_of_resources_with_status(self.random_deploymentID,
                                                                                             self.templtes_json)
         aplication_bar_dimension = 192
-        self.api_policies_dimensions_bar_list = ListUtils().create_list_of_policies_bar_dimensions(
-            self.random_deploymentID, no_duplicate_policy_type_list, self.templtes_json, aplication_bar_dimension)
+        self.api_policies_dimensions_bar_list = ListUtils().sort_list_alphabetically_by('type',
+                                                                                        ListUtils().create_list_of_policies_bar_dimensions(
+                                                                                            self.random_deploymentID,
+                                                                                            no_duplicate_policy_type_list,
+                                                                                            self.templtes_json,
+                                                                                            aplication_bar_dimension))
         print "self.api_policies_dimensions_bar_list: ", self.api_policies_dimensions_bar_list
 
         self.browser = DriverUtils().start_driver()

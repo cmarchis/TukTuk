@@ -347,6 +347,7 @@ if __name__ == "__main__":
 
     a = ListUtils().grab_variances('6170', 'PolicyType2', templates_list)
     b = ListUtils().grab_list_of_deployment_info('2468', templates_list)
-    c = ListUtils().return_total_compliant_value('2468', 'PolicyType1', templates_list)
-    d = ListUtils().grab_list_of_resources_with_status('1234', templates_list)
-    print "c: ", c
+    total = ListUtils().return_total_compliant_value('6170', 'PolicyType1', templates_list)
+    actual = ListUtils().grab_compliant_in_MSLO_of_same_policy_type('6170','PolicyType1', templates_list)
+    print "total: ", total
+    print "actual: ", actual
