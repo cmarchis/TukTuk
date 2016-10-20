@@ -1,11 +1,12 @@
 from tools.WebdriverBase import WebdriverBase
 import time
 
-RESOURCES_LIST_SELECTOR = 'li[role="listitem"]:not(.grommetux-box--pad-between-small)'
+# RESOURCES_LIST_SELECTOR = 'li[role="listitem"]:not(.grommetux-box--pad-between-small)'
 POLICIES_LIST_SELECTOR = 'div.grommetux-box--pad-small div.grommetux-box--pad-medium:nth-child(2) div.grommetux-box--direction-row:not(.grommetux-box--justify-between)'
 DEPLOYMENT_INFO_SELECTOR = 'div.grommetux-background-color-index-light-1 div.grommetux-box--pad-medium:first-child'
 POLICIES_BAR_LIST_SELECTOR = 'div[class="grommetux-box grommetux-box--direction-row grommetux-box--responsive grommetux-box--pad-none"]'
 NOTIFICATION_CONTAINER_SELECTOR = 'section.grommetux-section'
+RESOURCES_LIST_SELECTOR = 'ul.grommetux-list ul li'
 
 
 class DeploymentsPage(WebdriverBase):
@@ -142,3 +143,20 @@ class DeploymentsPage(WebdriverBase):
         while self.get_container_number() != 1 or i < 20:
             time.sleep(1)
             i += 1
+
+    def get_list_of_resources(self):
+        resource_list = self.locate_elements_by_css_selector(RESOURCES_LIST_SELECTOR)
+        list_resource = []
+        for resource in resource_list:
+            list_item = {}
+            list_item['name'] = resource.find_element_by_css_selector("div:first-child label").text
+            list_item['status'] = resource.find_element_by_css_selector("div:last-child label").text
+            list_resource.append(list_item)
+        return list_resource
+
+    def select_resource_by_id(self, resource_id):
+        resource_list = self.locate_elements_by_css_selector(RESOURCES_LIST_SELECTOR)
+        for resource in resource_list:
+            if resource.get_attribute("aria-label") == resource_id:
+                resource.click()
+                break

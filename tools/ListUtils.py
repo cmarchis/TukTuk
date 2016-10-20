@@ -334,12 +334,48 @@ class ListUtils(object):
         else:
             return DateUtils().convert_long_to_date(min(list_scan))
 
+    def grab_resources_from_deployment(self, deployment_id, templtes_list):
+        resource_list = []
+        for template_now in templtes_list:
+            for details in template_now['deploymentDetails']:
+                if details['deployment']['deploymentId'] == deployment_id:
+                    for resource in details['deployment']['resources']:
+                        list_item = {}
+                        list_item['resourceName'] = resource['resourceName']
+                        list_item['resourceId'] = resource['resourceId']
+                        resource_list.append(list_item)
+        return resource_list
+
+    def grab_compliance_resources(self, compliance_json):
+        compliance_resources = []
+        for compliance in compliance_json['members']:
+            list_item = {}
+            list_item["name"] = compliance['rule']['ruleName']
+            if compliance['status'] == 'NOT COMPLIANT':
+                list_item["status"] = 'NON COMPLIANT'
+            else:
+                list_item["status"] = compliance['status']
+            list_item["policy_type"] = compliance['policy']['name']
+            compliance_resources.append(list_item)
+        return compliance_resources
+
+    def create_compliance_list(self, key, list):
+        compliance_list = []
+        for item in list:
+            item_list = {}
+            if item['status'] == key:
+                item_list['status'] = item['status']
+                item_list['name'] = item['name']
+                item_list['policy_type'] = item['policy_type']
+                compliance_list.append(item_list)
+        return compliance_list
+
 
 if __name__ == "__main__":
     # policies_list = ApiUtils().grab_policies_json()
     # policies_json = ApiUtils().grab_json()
     templates_list = ApiUtils().grab_templates_json()
-
+    resource_compliance_list = ApiUtils().grab_resources_json('7404')
     # aaa = ListUtils().grab_list_of_policies_types('6170', templates_list)
     # bbb = ListUtils().grab_total_of_same_policy_type('6170','PolicyType1',templates_list)
     # print "aaa: ", aaa
@@ -348,6 +384,22 @@ if __name__ == "__main__":
     a = ListUtils().grab_variances('6170', 'PolicyType2', templates_list)
     b = ListUtils().grab_list_of_deployment_info('2468', templates_list)
     total = ListUtils().return_total_compliant_value('6170', 'PolicyType1', templates_list)
-    actual = ListUtils().grab_compliant_in_MSLO_of_same_policy_type('6170','PolicyType1', templates_list)
-    print "total: ", total
+    actual = ListUtils().grab_compliant_in_MSLO_of_same_policy_type('6170', 'PolicyType1', templates_list)
+    resource = ListUtils().grab_resources_from_deployment('1234', templates_list)
+    compl = ListUtils().grab_compliance_resources(resource_compliance_list)
+
+    from operator import itemgetter
+
+    print "compl: ", compl
+    mylist = sorted(compl, key=itemgetter('name', 'policy_type'))
+
+    print "compl: ", mylist
     print "actual: ", actual
+
+    # a = {"key1": 'a', "key2": 'b', "key3": 'c'}
+    # b = {"key1": 'd', "key2": 'e', "key3": 'f'}
+    # undecorated = [a, b]  # how do you sort this list?
+    #
+    # from operator import itemgetter
+    # result = sorted(undecorated, key=itemgetter('key2','key1'))
+    # print "result: ",result

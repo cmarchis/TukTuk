@@ -51,6 +51,7 @@ class IncludeComplianceActionsInDeploymentActionSectionTest(unittest.TestCase):
         template_details_page.select_deployment(self.random_deploymentName)
 
         deployment_page = DeploymentsPage(self.browser)
+
         aplication_deployment_info = deployment_page.create_list_of_dictionary_of_deployment_info()
         deployments_menu_header_page = DeploymentsMenuHeaderPage(self.browser)
         aplication_menu_options_list = deployments_menu_header_page.create_list_of_menu_options()
