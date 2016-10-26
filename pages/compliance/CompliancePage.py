@@ -5,13 +5,15 @@ from selenium.webdriver.support.ui import Select
 POLICY_CONTAINER_SELECTOR = "div.index-tiles__section"
 FILTER_SELETOR = "button.index-filters__menu"
 STATUS_SELECTOR = "div.index-filter__body label span.grommetux-check-box__label span"
+SORT_SELECTOR = "div > select"
+SORT_ICON_SELECTOR = "div.grommetux-menu__drop--align-right span>svg.grommetux-control-icon-filter"
 
 
 class CompliancePage(WebdriverBase):
     def __init__(self, driver):
         self.driver = driver
 
-    def create_list_of_dictionary_for_resources(self):
+    def create_list_of_dictionary_for_compliance(self):
         policy_list = self.locate_elements_by_css_selector(POLICY_CONTAINER_SELECTOR)
         return_list = []
         for item_now in policy_list:
@@ -19,7 +21,7 @@ class CompliancePage(WebdriverBase):
             policy_name_list = item_now.find_elements_by_css_selector("div div.grommetux-tile--hover-border-small")
             for item_now2 in policy_name_list:
                 list_item = {}
-                list_item['policy_type'] = item_now.find_element_by_css_selector("header label").text
+                list_item['key'] = item_now.find_element_by_css_selector("header label").text
                 list_item['name'] = item_now2.find_element_by_css_selector("label.grommetux-label--medium strong").text
                 abc = item_now2.find_element_by_css_selector("label.grommetux-label--medium strong").text
                 list_item['status'] = (item_now2.find_element_by_css_selector("label:last-child").text).upper()
@@ -46,7 +48,19 @@ class CompliancePage(WebdriverBase):
         for item in status_option_list:
             if item.text == status:
                 item.click()
+                time.sleep(2)
                 break
+        filter_button_open = self.locate_element_by_css_selector(SORT_ICON_SELECTOR)
+        filter_button_open.click()
+
+    def select_sort_option(self, sort_option):
+        filter_button = self.locate_element_by_css_selector(FILTER_SELETOR)
+        filter_button.click()
+        sort_drop_down = Select(self.locate_element_by_css_selector(SORT_SELECTOR))
+        sort_drop_down.select_by_visible_text(sort_option)
+        time.sleep(2)
+        filter_button_open = self.locate_element_by_css_selector(SORT_ICON_SELECTOR)
+        filter_button_open.click()
 
     def scroll_until_all_policies_types_are_visible(self, api_list_compliance):
         """
@@ -60,6 +74,6 @@ class CompliancePage(WebdriverBase):
         """
         i = 0
         while len(
-                self.create_list_of_dictionary_for_resources()) != api_list_compliance and i < 5:
+                self.create_list_of_dictionary_for_compliance()) != api_list_compliance and i < 5:
             self.scroll_pg_down()
             i += 1

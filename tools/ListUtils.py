@@ -2,6 +2,11 @@ from __future__ import division
 from tools.ApiUtils import ApiUtils
 from tools.DateUtils import DateUtils
 import random
+import datetime
+import time
+
+from operator import itemgetter
+import natsort
 
 
 class ListUtils(object):
@@ -12,6 +17,15 @@ class ListUtils(object):
         """
         sorted_list = sorted(list, key=lambda k: k[field_key])
         return sorted_list
+
+    def sort_list_dictionary_natural_ascending(self, list):
+        """
+        Sort ascending a list of dictionary by specified key in a natural order. (in a human way not ascii order)
+        :param list:
+        :return:
+        """
+        new_list = natsort.natsorted(list, key=itemgetter(*['key']))
+        return new_list
 
     def remove_duplicates_from_list(self, list):
         """
@@ -296,7 +310,7 @@ class ListUtils(object):
                 if details['deployment']['deploymentId'] == deployment_id:
                     list_item['status'] = details['deployment']['status']
                     list_item['template'] = details['deployment']['templateName']
-                    list_item['last_scanned'] = DateUtils().convert_long_to_date(
+                    list_item['last_scanned'] = DateUtils().convert_long_to_aplication_format_date(
                         details['deployment']['complianceScore']['lastScanDate'])
                     list_item['compliant'] = str(
                         details['deployment']['complianceScore']['compliantPolicies']) + ' of ' + \
@@ -330,9 +344,9 @@ class ListUtils(object):
             if job['type'] == "SCAN":
                 list_scan.append(job['startDT'])
         if len(list_remediate) != 0:
-            return DateUtils().convert_long_to_date(min(list_remediate))
+            return DateUtils().convert_long_to_aplication_format_date(min(list_remediate))
         else:
-            return DateUtils().convert_long_to_date(min(list_scan))
+            return DateUtils().convert_long_to_aplication_format_date(min(list_scan))
 
     def grab_resources_from_deployment(self, deployment_id, templtes_list):
         resource_list = []
@@ -355,7 +369,25 @@ class ListUtils(object):
                 list_item["status"] = 'NON COMPLIANT'
             else:
                 list_item["status"] = compliance['status']
-            list_item["policy_type"] = compliance['policy']['name']
+            list_item["key"] = compliance['policy']['name']
+            compliance_resources.append(list_item)
+        return compliance_resources
+
+    def grab_compliance_resources_key(self, key_name, compliance_json):
+        compliance_resources = []
+        for compliance in compliance_json['members']:
+            list_item = {}
+            list_item["name"] = compliance['rule']['ruleName']
+            if compliance['status'] == 'NOT COMPLIANT':
+                list_item["status"] = 'NON COMPLIANT'
+            else:
+                list_item["status"] = compliance['status']
+            if key_name == "Policy":
+                list_item["key"] = compliance['policy']['name']
+            if key_name == "Resource":
+                list_item["key"] = compliance['resource']['name']
+            if key_name == "Requirement":
+                list_item["key"] = compliance['requirement']['name']
             compliance_resources.append(list_item)
         return compliance_resources
 
@@ -366,35 +398,81 @@ class ListUtils(object):
             if item['status'] == key:
                 item_list['status'] = item['status']
                 item_list['name'] = item['name']
-                item_list['policy_type'] = item['policy_type']
+                item_list['key'] = item['key']
                 compliance_list.append(item_list)
         return compliance_list
+
+    def create_date_list(self, compliance_json):
+        compliance_list = []
+        for compliance in compliance_json['members']:
+            list_item = {}
+            list_item["name"] = compliance['rule']['ruleName']
+            if compliance['status'] == 'NOT COMPLIANT':
+                list_item["status"] = 'NON COMPLIANT'
+            else:
+                list_item["status"] = compliance['status']
+
+            list_item["date"] = self.convert_timpestamp_to(compliance['createdDT'])
+            compliance_list.append(list_item)
+        return compliance_list
+
+    def convert_timpestamp_to(self, timestamp):
+        date = ''
+        self.found = False
+        today = time.strftime('%Y-%m-%d')
+        start_week = DateUtils().get_date_before_current_date(7)
+        end_week = DateUtils().get_date_before_current_date(1)
+        start_month = DateUtils().get_date_before_current_date(29)
+        end_month = DateUtils().get_date_before_current_date(8)
+        if DateUtils().date_between(DateUtils().convert_long_y_m_d(timestamp), today, today):
+            date = 'Today'
+            self.found = True
+        elif DateUtils().date_between(DateUtils().convert_long_y_m_d(timestamp), start_week, end_week):
+            date = 'Last 7 days'
+            self.found = True
+        elif DateUtils().date_between(DateUtils().convert_long_y_m_d(timestamp), start_month, end_month):
+            date = 'Last month'
+            self.found = True
+        elif self.found != True:
+            date = 'Older'
+        return date
 
 
 if __name__ == "__main__":
     # policies_list = ApiUtils().grab_policies_json()
     # policies_json = ApiUtils().grab_json()
-    templates_list = ApiUtils().grab_templates_json()
+    # templates_list = ApiUtils().grab_templates_json()
     resource_compliance_list = ApiUtils().grab_resources_json('7404')
     # aaa = ListUtils().grab_list_of_policies_types('6170', templates_list)
     # bbb = ListUtils().grab_total_of_same_policy_type('6170','PolicyType1',templates_list)
     # print "aaa: ", aaa
     # print "bbb: ", bbb
+    #
+    # a = ListUtils().grab_variances('6170', 'PolicyType2', templates_list)
+    # b = ListUtils().grab_list_of_deployment_info('2468', templates_list)
+    # total = ListUtils().return_total_compliant_value('6170', 'PolicyType1', templates_list)
+    # actual = ListUtils().grab_compliant_in_MSLO_of_same_policy_type('6170', 'PolicyType1', templates_list)
+    # resource = ListUtils().grab_resources_from_deployment('1234', templates_list)
+    # compl = ListUtils().grab_compliance_resources_key('Requirement', resource_compliance_list)
+    #
+    # print "compl: ", compl
+    #
+    # abc = ListUtils().grab_compliance_resources_key("Requirement", resource_compliance_list)
+    # abc1 = ListUtils().sort_list_dictionary_natural_ascending(abc)
+    # print "abc: ", abc
+    #
+    #
 
-    a = ListUtils().grab_variances('6170', 'PolicyType2', templates_list)
-    b = ListUtils().grab_list_of_deployment_info('2468', templates_list)
-    total = ListUtils().return_total_compliant_value('6170', 'PolicyType1', templates_list)
-    actual = ListUtils().grab_compliant_in_MSLO_of_same_policy_type('6170', 'PolicyType1', templates_list)
-    resource = ListUtils().grab_resources_from_deployment('1234', templates_list)
-    compl = ListUtils().grab_compliance_resources(resource_compliance_list)
+    # offset = time.timezone if (time.localtime().tm_isdst == 0) else time.altzone
+    # print "difference: ", offset / 60 / 60 * -1
 
-    from operator import itemgetter
 
-    print "compl: ", compl
-    mylist = sorted(compl, key=itemgetter('name', 'policy_type'))
+    # print "date: ", time.strftime("%d/%m/%Y")
 
-    print "compl: ", mylist
-    print "actual: ", actual
+    # mylist = sorted(compl, key=itemgetter('name', 'policy_type'))
+    #
+    # print "compl: ", mylist
+    # print "actual: ", actual
 
     # a = {"key1": 'a', "key2": 'b', "key3": 'c'}
     # b = {"key1": 'd', "key2": 'e', "key3": 'f'}
@@ -403,3 +481,5 @@ if __name__ == "__main__":
     # from operator import itemgetter
     # result = sorted(undecorated, key=itemgetter('key2','key1'))
     # print "result: ",result
+
+    print "aa: ", ListUtils().convert_timpestamp_to(1477291151000)

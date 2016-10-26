@@ -13,26 +13,40 @@ from tools.ListUtils import ListUtils
 from operator import itemgetter
 
 
-class ViewDeploymentComplianceStatusOverviewTest(unittest.TestCase):
+class ViewDeploymentComplianceResultDetailsTest(unittest.TestCase):
     def setUp(self):
-        self.templtes_json = ApiUtils().grab_templates_json()
-        self.list_of_templates = ListUtils().grab_template_names_and_id(self.templtes_json)
-        random_template_list = ListUtils().return_random_from_list(self.list_of_templates)
-        self.random_templateID = random_template_list.get('templateID')
+        # get Template
+        templates_json = ApiUtils().grab_templates_json()
+        list_of_templates = ListUtils().grab_template_names_and_id(templates_json)
+        random_template_list = ListUtils().return_random_from_list(list_of_templates)
+        random_templateID = random_template_list.get('templateID')
         self.random_templateName = random_template_list.get('templateName')
 
-        self.deployment_list = ListUtils().grab_deployment_name_and_id(self.random_templateID, self.templtes_json)
-        random_deployment_list = ListUtils().return_random_from_list(self.deployment_list)
+        # get Deployment
+        deployment_list = ListUtils().grab_deployment_name_and_id(random_templateID, templates_json)
+        random_deployment_list = ListUtils().return_random_from_list(deployment_list)
         self.random_deploymentName = random_deployment_list.get('deploymentName')
-        self.random_deploymentID = random_deployment_list.get('deploymentId')
+        random_deploymentID = random_deployment_list.get('deploymentId')
 
-        resource_list = ListUtils().grab_resources_from_deployment(self.random_deploymentID, self.templtes_json)
+        # get Resources
+        resource_list = ListUtils().grab_resources_from_deployment(random_deploymentID, templates_json)
         random_resource_list = ListUtils().return_random_from_list(resource_list)
         self.random_resource_id = random_resource_list.get('resourceId')
 
-        compliance = ApiUtils().grab_resources_json(self.random_resource_id)
+        # get Compliance
+        compliance_json = ApiUtils().grab_resources_json(self.random_resource_id)
+        self.api_compliance_list_dictionary = ListUtils().grab_compliance_resources(compliance_json)
+        self.api_sorted_compliance_dictionary = sorted(self.api_compliance_list_dictionary,
+                                                       key=itemgetter('name', 'key', 'status'))
+        self.api_compliance_filtered_by_status = ListUtils().create_compliance_list('COMPLIANT',
+                                                                                    self.api_sorted_compliance_dictionary)
+        self.api_sorted_compliance_list_dictionary = sorted(self.api_compliance_filtered_by_status,
+                                                            key=itemgetter('name', 'key', 'status'))
 
-        self.compliance_resources_api = ListUtils().grab_compliance_resources(compliance)
+        self.api_compliance_list_dictionary_sorted_by_key = ListUtils().grab_compliance_resources_key("Requirement",
+                                                                                                      compliance_json)
+        self.api_compliance_list_dictionary_sort = ListUtils().sort_list_dictionary_natural_ascending(
+            self.api_compliance_list_dictionary_sorted_by_key)
 
         self.browser = DriverUtils().start_driver()
 
@@ -50,32 +64,37 @@ class ViewDeploymentComplianceStatusOverviewTest(unittest.TestCase):
         deployment_page.select_resource_by_id(self.random_resource_id)
 
         compliance_page = CompliancePage(self.browser)
-        compliance_page.scroll_until_all_policies_types_are_visible(len(self.compliance_resources_api))
-        compliance_list_aplication = compliance_page.create_list_of_dictionary_for_resources()
+        compliance_page.scroll_until_all_policies_types_are_visible(len(self.api_compliance_list_dictionary))
+        aplication_compliance_list = compliance_page.create_list_of_dictionary_for_compliance()
 
-        sorted_compliance_resources_api = sorted(self.compliance_resources_api,
-                                                 key=itemgetter('name', 'policy_type', 'status'))
-        sorted_compliance_list_aplication = sorted(compliance_list_aplication,
-                                                   key=itemgetter('name', 'policy_type', 'status'))
+        aplication_sorted_compliance_dictionary = sorted(aplication_compliance_list,
+                                                         key=itemgetter('name', 'key', 'status'))
 
-        # compliance_resource_sorted_by_status_api = ListUtils().create_compliance_list('COMPLIANT', sorted_compliance_resources_api)
+        SoftAssert().verfy_equals_true(
+            "List of compliance grabbed from API doesn't matches with the one grabbed from UI ",
+            self.api_sorted_compliance_dictionary,
+            aplication_sorted_compliance_dictionary)
 
-        SoftAssert().verfy_equals_true("List of Results", sorted_compliance_resources_api,
-                                       sorted_compliance_list_aplication)
-
-        compliance_resource_sorted_by_status_api = ListUtils().create_compliance_list('COMPLIANT',
-                                                                                      sorted_compliance_resources_api)
         compliance_page.select_status('Compliant')
 
-        compliance_page.scroll_until_all_policies_types_are_visible(len(compliance_resource_sorted_by_status_api))
-        aplication_compliance_list_status = compliance_page.create_list_of_dictionary_for_resources()
-        aplication_sorted_compliance_list_status = sorted(aplication_compliance_list_status,
-                                                          key=itemgetter('name', 'policy_type', 'status'))
-        api_sorted_compliance_list_status = sorted(compliance_resource_sorted_by_status_api,
-                                                   key=itemgetter('name', 'policy_type', 'status'))
+        compliance_page.scroll_until_all_policies_types_are_visible(len(self.api_compliance_filtered_by_status))
+        aplication_compliance_filter_list_dictionary = compliance_page.create_list_of_dictionary_for_compliance()
+        aplication_compliance_filter_list_dictionary_sorted = sorted(aplication_compliance_filter_list_dictionary,
+                                                                     key=itemgetter('name', 'key', 'status'))
 
-        SoftAssert().verfy_equals_true("List of Results sorted", api_sorted_compliance_list_status,
-                                       aplication_sorted_compliance_list_status)
+        SoftAssert().verfy_equals_true(
+            "List of compliance, filter by status, grabbed from API and doesn't matches with the one grabbed from UI ",
+            self.api_sorted_compliance_list_dictionary,
+            aplication_compliance_filter_list_dictionary_sorted)
+
+        compliance_page.select_status('All')
+        compliance_page.select_sort_option("Requirement")
+        aplication_compliance_list_dictionary_sort = compliance_page.create_list_of_dictionary_for_compliance()
+
+        SoftAssert().verfy_equals_true(
+            "List of compliance, sorted, grabbed from API and doesn't matches with the one grabbed from UI ",
+            self.api_compliance_list_dictionary_sort,
+            aplication_compliance_list_dictionary_sort)
 
         self.assertEqual(SoftAssert().failures_size(), 0, str(SoftAssert().failures_list()))
 
