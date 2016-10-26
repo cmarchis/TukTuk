@@ -336,6 +336,11 @@ class ListUtils(object):
         return deployment_list
 
     def get_last_remediate_scan_date(self, jobs_json):
+        """
+        For a given json of jobs return the timestamp of the first remediate or scan job
+        :param jobs_json:
+        :return:
+        """
         list_remediate = []
         list_scan = []
         for job in jobs_json:
@@ -349,6 +354,12 @@ class ListUtils(object):
             return DateUtils().convert_long_to_aplication_format_date(min(list_scan))
 
     def grab_resources_from_deployment(self, deployment_id, templtes_list):
+        """
+        Create a list of dictionary for resources of a given deployment id
+        :param deployment_id:
+        :param templtes_list:
+        :return:
+        """
         resource_list = []
         for template_now in templtes_list:
             for details in template_now['deploymentDetails']:
@@ -361,6 +372,11 @@ class ListUtils(object):
         return resource_list
 
     def grab_compliance_resources(self, compliance_json):
+        """
+        Create a list of dictionary for compliance
+        :param compliance_json:
+        :return:
+        """
         compliance_resources = []
         for compliance in compliance_json['members']:
             list_item = {}
@@ -374,6 +390,12 @@ class ListUtils(object):
         return compliance_resources
 
     def grab_compliance_resources_key(self, key_name, compliance_json):
+        """
+        Create a list of dictionary for compliance with specified key
+        :param key_name:
+        :param compliance_json:
+        :return:
+        """
         compliance_resources = []
         for compliance in compliance_json['members']:
             list_item = {}
@@ -392,6 +414,12 @@ class ListUtils(object):
         return compliance_resources
 
     def create_compliance_list(self, key, list):
+        """
+        Create a list of dictionary for compliance with the given status from compliance dictionary list
+        :param key:
+        :param list:
+        :return:
+        """
         compliance_list = []
         for item in list:
             item_list = {}
@@ -402,7 +430,12 @@ class ListUtils(object):
                 compliance_list.append(item_list)
         return compliance_list
 
-    def create_date_list(self, compliance_json):
+    def create_compliance_time_list(self, compliance_json):
+        """
+        Create a list of dictionary for compliance from compliance json.
+        :param compliance_json:
+        :return:
+        """
         compliance_list = []
         for compliance in compliance_json['members']:
             list_item = {}
@@ -412,11 +445,17 @@ class ListUtils(object):
             else:
                 list_item["status"] = compliance['status']
 
-            list_item["date"] = self.convert_timpestamp_to(compliance['createdDT'])
+            list_item["date"] = self.convert_timpestamp_to_compliance_sort_time(compliance['createdDT'])
             compliance_list.append(list_item)
         return compliance_list
 
-    def convert_timpestamp_to(self, timestamp):
+    def convert_timpestamp_to_compliance_sort_time(self, timestamp):
+        """
+        For a given timestamp is returning a string witch specifies the difference between given timestamp and the
+         system date.
+        :param timestamp:
+        :return:
+        """
         date = ''
         self.found = False
         today = time.strftime('%Y-%m-%d')
@@ -482,4 +521,4 @@ if __name__ == "__main__":
     # result = sorted(undecorated, key=itemgetter('key2','key1'))
     # print "result: ",result
 
-    print "aa: ", ListUtils().convert_timpestamp_to(1477291151000)
+    print "aa: ", ListUtils().convert_timpestamp_to_compliance_sort_time(1477291151000)
