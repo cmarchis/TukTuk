@@ -10,6 +10,7 @@ from tools.DriverUtils import DriverUtils
 from tools.SoftAssert import SoftAssert
 from tools.ListUtils import ListUtils
 from tools.ApiUtils import ApiUtils
+from tools.ConfigUtils import ConfigUtils
 
 
 class AdHocScanComplianceAndRemediateDeploymentTest(unittest.TestCase):
@@ -26,6 +27,9 @@ class AdHocScanComplianceAndRemediateDeploymentTest(unittest.TestCase):
     """
 
     def setUp(self):
+        self.base_url = ConfigUtils().read_config_file()['baseURL']
+        self.user_name = ConfigUtils().read_config_file()['userName']
+        self.user_pass = ConfigUtils().read_config_file()['userPass']
         self.expected_scan_message = 'SCAN in progress'
         self.expected_remediate_message = 'REMEDIATE in progress'
         self.expected_menu_option_state = 'Disabled'

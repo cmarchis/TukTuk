@@ -34,13 +34,13 @@ class DriverUtils(object):
         :return:
         """
         config_map = ConfigUtils().read_config_file()
-        language = FileUtils().read_property('lang.ini', 'language')
+       #language = FileUtils().read_property('lang.ini', 'language')
         # if config_map['headlessMode'] == 'true':
             # self.start_linux_headless()
         if config_map['browser'] == 'chrome':
             driver_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), config_map['chromePath'])
             options = webdriver.ChromeOptions()
-            options.add_argument('--lang=' + language)
+            #options.add_argument('--lang=' + language)
             driver = webdriver.Chrome(driver_path,chrome_options=options)
         if config_map['browser'] == 'firefox':
             driver = webdriver.Firefox()
