@@ -30,18 +30,29 @@ class AdHocScanComplianceAndRemediateDeploymentTest(unittest.TestCase):
         self.base_url = ConfigUtils().read_config_file()['baseURL']
         self.user_name = ConfigUtils().read_config_file()['userName']
         self.user_pass = ConfigUtils().read_config_file()['userPass']
+        self.api_url = ConfigUtils().read_config_file()['apiBaseURL']
+        print "self.api_url: ", self.api_url
         self.expected_scan_message = 'SCAN in progress'
         self.expected_remediate_message = 'REMEDIATE in progress'
         self.expected_menu_option_state = 'Disabled'
-        self.templtes_json = ApiUtils().grab_templates_json()
+        self.templtes_json = ApiUtils().grab_templates_json(self.api_url)
         self.list_of_templates = ListUtils().grab_template_names_and_id(self.templtes_json)
         random_template_dictionary = ListUtils().return_random_from_list(self.list_of_templates)
-        self.random_templateID = random_template_dictionary.get('templateID')
-        self.random_templateName = random_template_dictionary.get('templateName')
-        self.deployment_list = ListUtils().grab_deployment_name_and_id(self.random_templateID, self.templtes_json)
+        self.random_templateID = '7b4ca205-7b75-459c-81f1-a61fc8b6be69'
+        self.random_templateName = 'Oracle Provision Template'
+        # self.random_templateID = random_template_dictionary.get('templateID')
+        # self.random_templateName = random_template_dictionary.get('templateName')
+        print "random_templateName: ", self.random_templateName
+        print "self.random_templateID: ", self.random_templateID
+        deploymnet_json = ApiUtils().grab_deployments_json(self.api_url, self.random_templateID)
+        print "deploymnet_json: ",deploymnet_json
+        self.deployment_list = ListUtils().grab_deployment_name_and_id(deploymnet_json)
         random_deployment_list = ListUtils().return_random_from_list(self.deployment_list)
-        random_deployment_id = random_deployment_list.get('deploymentId')
-        self.random_deployment = random_deployment_list.get('deploymentName')
+        random_deployment_id = '113402909'
+        self.random_deployment = 'Deployment Test 2'
+        # random_deployment_id = random_deployment_list.get('deploymentId')
+        # self.random_deployment = random_deployment_list.get('deploymentName')
+        print "self.random_deployment: ",self.random_deployment
         job_list = ApiUtils().grab_job_json(random_deployment_id)
         self.api_last_scan_message_date = 'Started ' + ListUtils().get_last_remediate_scan_date(job_list)
 

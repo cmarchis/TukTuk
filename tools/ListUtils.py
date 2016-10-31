@@ -268,8 +268,10 @@ class ListUtils(object):
         return_list = []
         for template_now in templtes_list:
             list_item = {}
-            list_item['templateName'] = template_now['template']['template']['templateName']
-            list_item['templateID'] = template_now['template']['template']['templateID']
+            list_item['templateName'] = template_now['templateName']
+            list_item['templateID'] = template_now['templateID']
+            # list_item['templateName'] = template_now['template']['template']['templateName']
+            # list_item['templateID'] = template_now['template']['template']['templateID']
             return_list.append(list_item)
 
         return return_list
@@ -318,7 +320,7 @@ class ListUtils(object):
                                                      'totalPolicies']) + ' Compliant'
         return list_item
 
-    def grab_deployment_name_and_id(self, template_id, templtes_list):
+    def grab_deployment_name_and_id(self, deployments_json):
         """
         From json grabbed from api, return a list of deployments name for a given template
         :param template_name:
@@ -326,155 +328,161 @@ class ListUtils(object):
         :return:
         """
         deployment_list = []
-        for template_now in templtes_list:
+        for resource_now in deployments_json:
             list_item = {}
-            if template_now['template']['template']['templateID'] == template_id:
-                for resource_now in template_now['deploymentDetails']:
-                    list_item['deploymentName'] = resource_now['deployment']['deploymentName']
-                    list_item['deploymentId'] = resource_now['deployment']['deploymentId']
-                    deployment_list.append(list_item)
+            list_item['deploymentName'] = resource_now['deploymentName']
+            list_item['deploymentId'] = resource_now['deploymentId']
+            deployment_list.append(list_item)
+
         return deployment_list
 
-    def get_last_remediate_scan_date(self, jobs_json):
-        """
-        For a given json of jobs return the timestamp of the first remediate or scan job
-        :param jobs_json:
-        :return:
-        """
-        list_remediate = []
-        list_scan = []
-        for job in jobs_json:
-            if job['type'] == "REMEDIATE":
-                list_remediate.append(job['startDT'])
-            if job['type'] == "SCAN":
-                list_scan.append(job['startDT'])
-        if len(list_remediate) != 0:
-            return DateUtils().convert_long_to_aplication_format_date(min(list_remediate))
+
+def get_last_remediate_scan_date(self, jobs_json):
+    """
+    For a given json of jobs return the timestamp of the first remediate or scan job
+    :param jobs_json:
+    :return:
+    """
+    list_remediate = []
+    list_scan = []
+    for job in jobs_json:
+        if job['type'] == "REMEDIATE":
+            list_remediate.append(job['startDT'])
+        if job['type'] == "SCAN":
+            list_scan.append(job['startDT'])
+    if len(list_remediate) != 0:
+        return DateUtils().convert_long_to_aplication_format_date(min(list_remediate))
+    else:
+        return DateUtils().convert_long_to_aplication_format_date(min(list_scan))
+
+
+def grab_resources_from_deployment(self, deployment_id, templtes_list):
+    """
+    Create a list of dictionary for resources of a given deployment id
+    :param deployment_id:
+    :param templtes_list:
+    :return:
+    """
+    resource_list = []
+    for template_now in templtes_list:
+        for details in template_now['deploymentDetails']:
+            if details['deployment']['deploymentId'] == deployment_id:
+                for resource in details['deployment']['resources']:
+                    list_item = {}
+                    list_item['resourceName'] = resource['resourceName']
+                    list_item['resourceId'] = resource['resourceId']
+                    resource_list.append(list_item)
+    return resource_list
+
+
+def grab_compliance_resources(self, compliance_json):
+    """
+    Create a list of dictionary for compliance
+    :param compliance_json:
+    :return:
+    """
+    compliance_resources = []
+    for compliance in compliance_json['members']:
+        list_item = {}
+        list_item["name"] = compliance['rule']['ruleName']
+        if compliance['status'] == 'NOT COMPLIANT':
+            list_item["status"] = 'NON COMPLIANT'
         else:
-            return DateUtils().convert_long_to_aplication_format_date(min(list_scan))
+            list_item["status"] = compliance['status']
+        list_item["key"] = compliance['policy']['name']
+        compliance_resources.append(list_item)
+    return compliance_resources
 
-    def grab_resources_from_deployment(self, deployment_id, templtes_list):
-        """
-        Create a list of dictionary for resources of a given deployment id
-        :param deployment_id:
-        :param templtes_list:
-        :return:
-        """
-        resource_list = []
-        for template_now in templtes_list:
-            for details in template_now['deploymentDetails']:
-                if details['deployment']['deploymentId'] == deployment_id:
-                    for resource in details['deployment']['resources']:
-                        list_item = {}
-                        list_item['resourceName'] = resource['resourceName']
-                        list_item['resourceId'] = resource['resourceId']
-                        resource_list.append(list_item)
-        return resource_list
 
-    def grab_compliance_resources(self, compliance_json):
-        """
-        Create a list of dictionary for compliance
-        :param compliance_json:
-        :return:
-        """
-        compliance_resources = []
-        for compliance in compliance_json['members']:
-            list_item = {}
-            list_item["name"] = compliance['rule']['ruleName']
-            if compliance['status'] == 'NOT COMPLIANT':
-                list_item["status"] = 'NON COMPLIANT'
-            else:
-                list_item["status"] = compliance['status']
+def grab_compliance_resources_key(self, key_name, compliance_json):
+    """
+    Create a list of dictionary for compliance with specified key
+    :param key_name:
+    :param compliance_json:
+    :return:
+    """
+    compliance_resources = []
+    for compliance in compliance_json['members']:
+        list_item = {}
+        list_item["name"] = compliance['rule']['ruleName']
+        if compliance['status'] == 'NOT COMPLIANT':
+            list_item["status"] = 'NON COMPLIANT'
+        else:
+            list_item["status"] = compliance['status']
+        if key_name == "Policy":
             list_item["key"] = compliance['policy']['name']
-            compliance_resources.append(list_item)
-        return compliance_resources
+        if key_name == "Resource":
+            list_item["key"] = compliance['resource']['name']
+        if key_name == "Requirement":
+            list_item["key"] = compliance['requirement']['name']
+        compliance_resources.append(list_item)
+    return compliance_resources
 
-    def grab_compliance_resources_key(self, key_name, compliance_json):
-        """
-        Create a list of dictionary for compliance with specified key
-        :param key_name:
-        :param compliance_json:
-        :return:
-        """
-        compliance_resources = []
-        for compliance in compliance_json['members']:
-            list_item = {}
-            list_item["name"] = compliance['rule']['ruleName']
-            if compliance['status'] == 'NOT COMPLIANT':
-                list_item["status"] = 'NON COMPLIANT'
-            else:
-                list_item["status"] = compliance['status']
-            if key_name == "Policy":
-                list_item["key"] = compliance['policy']['name']
-            if key_name == "Resource":
-                list_item["key"] = compliance['resource']['name']
-            if key_name == "Requirement":
-                list_item["key"] = compliance['requirement']['name']
-            compliance_resources.append(list_item)
-        return compliance_resources
 
-    def create_compliance_list(self, key, list):
-        """
-        Create a list of dictionary for compliance with the given status from compliance dictionary list
-        :param key:
-        :param list:
-        :return:
-        """
-        compliance_list = []
-        for item in list:
-            item_list = {}
-            if item['status'] == key:
-                item_list['status'] = item['status']
-                item_list['name'] = item['name']
-                item_list['key'] = item['key']
-                compliance_list.append(item_list)
-        return compliance_list
+def create_compliance_list(self, key, list):
+    """
+    Create a list of dictionary for compliance with the given status from compliance dictionary list
+    :param key:
+    :param list:
+    :return:
+    """
+    compliance_list = []
+    for item in list:
+        item_list = {}
+        if item['status'] == key:
+            item_list['status'] = item['status']
+            item_list['name'] = item['name']
+            item_list['key'] = item['key']
+            compliance_list.append(item_list)
+    return compliance_list
 
-    def create_compliance_time_list(self, compliance_json):
-        """
-        Create a list of dictionary for compliance from compliance json.
-        :param compliance_json:
-        :return:
-        """
-        compliance_list = []
-        for compliance in compliance_json['members']:
-            list_item = {}
-            list_item["name"] = compliance['rule']['ruleName']
-            if compliance['status'] == 'NOT COMPLIANT':
-                list_item["status"] = 'NON COMPLIANT'
-            else:
-                list_item["status"] = compliance['status']
 
-            list_item["date"] = self.convert_timpestamp_to_compliance_sort_time(compliance['createdDT'])
-            compliance_list.append(list_item)
-        return compliance_list
+def create_compliance_time_list(self, compliance_json):
+    """
+    Create a list of dictionary for compliance from compliance json.
+    :param compliance_json:
+    :return:
+    """
+    compliance_list = []
+    for compliance in compliance_json['members']:
+        list_item = {}
+        list_item["name"] = compliance['rule']['ruleName']
+        if compliance['status'] == 'NOT COMPLIANT':
+            list_item["status"] = 'NON COMPLIANT'
+        else:
+            list_item["status"] = compliance['status']
 
-    def convert_timpestamp_to_compliance_sort_time(self, timestamp):
-        """
-        For a given timestamp is returning a string witch specifies the difference between given timestamp and the
-         system date.
-        :param timestamp:
-        :return:
-        """
-        date = ''
-        self.found = False
-        today = time.strftime('%Y-%m-%d')
-        start_week = DateUtils().get_date_before_current_date(7)
-        end_week = DateUtils().get_date_before_current_date(1)
-        start_month = DateUtils().get_date_before_current_date(29)
-        end_month = DateUtils().get_date_before_current_date(8)
-        if DateUtils().date_between(DateUtils().convert_long_y_m_d(timestamp), today, today):
-            date = 'Today'
-            self.found = True
-        elif DateUtils().date_between(DateUtils().convert_long_y_m_d(timestamp), start_week, end_week):
-            date = 'Last 7 days'
-            self.found = True
-        elif DateUtils().date_between(DateUtils().convert_long_y_m_d(timestamp), start_month, end_month):
-            date = 'Last month'
-            self.found = True
-        elif self.found != True:
-            date = 'Older'
-        return date
+        list_item["date"] = self.convert_timpestamp_to_compliance_sort_time(compliance['createdDT'])
+        compliance_list.append(list_item)
+    return compliance_list
+
+
+def convert_timpestamp_to_compliance_sort_time(self, timestamp):
+    """
+    For a given timestamp is returning a string witch specifies the difference between given timestamp and the
+     system date.
+    :param timestamp:
+    :return:
+    """
+    date = ''
+    self.found = False
+    today = time.strftime('%Y-%m-%d')
+    start_week = DateUtils().get_date_before_current_date(7)
+    end_week = DateUtils().get_date_before_current_date(1)
+    start_month = DateUtils().get_date_before_current_date(29)
+    end_month = DateUtils().get_date_before_current_date(8)
+    if DateUtils().date_between(DateUtils().convert_long_y_m_d(timestamp), today, today):
+        date = 'Today'
+        self.found = True
+    elif DateUtils().date_between(DateUtils().convert_long_y_m_d(timestamp), start_week, end_week):
+        date = 'Last 7 days'
+        self.found = True
+    elif DateUtils().date_between(DateUtils().convert_long_y_m_d(timestamp), start_month, end_month):
+        date = 'Last month'
+        self.found = True
+    elif self.found != True:
+        date = 'Older'
+    return date
 
 
 if __name__ == "__main__":

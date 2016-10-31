@@ -5,7 +5,7 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import base64
 
 policies_url = 'http://localhost:8010/urest/v1/deployments'
-templates_url = 'http://localhost:8010/urest/v1/template'
+templates_url = '/template'
 resources_url = 'http://localhost:8010/urest/v1/compliance/compliance_detail?query=resource.id%20EQ%207404'
 
 
@@ -13,6 +13,51 @@ class ApiUtils(object):
     """
     API calls to the GUI Rest API. These are used as expected data for validation
     """
+
+    def request_token(self):
+        headers = {'Authorization': 'Basic aWRtVHJhbnNwb3J0VXNlcjppZG1UcmFuc3BvcnRVc2Vy', 'Accept': 'application/json',
+                   'Content-Type': 'application/json'}
+        requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+        jdata = json.dumps({
+            "passwordCredentials": {
+                "username": "admin",
+                "password": "cloud"
+            },
+            "tenantName": "PROVIDER"
+        })
+        req = requests.post(
+            "https://192.168.155.238:8443/idm-service/v2.0/tokens", data=jdata, headers=headers, verify=False).json()
+        return req['token']['id']
+
+    def grab_templates_json(self, api_url):
+        """
+        Return a json containing all templates from live api
+        :return:
+        """
+        headers = {
+            'X-Auth-Token': self.request_token()}
+        request = urllib2.Request(api_url + templates_url, headers=headers)
+        response = urllib2.urlopen(request)
+        json_object = json.load(response)
+        templates_list = []
+        for item_now in json_object['members']:
+            templates_list.append(item_now)
+        return templates_list
+
+    def grab_deployments_json(self, api_url, template_id):
+        """
+        Return a json containing all deployments from live api
+        :return:
+        """
+        headers = {
+            'X-Auth-Token': self.request_token()}
+        request = urllib2.Request(api_url + templates_url + '/' + template_id, headers=headers)
+        response = urllib2.urlopen(request)
+        json_object = json.load(response)
+        templates_list = []
+        for item_now in json_object['deploymentDetails']:
+            templates_list.append(item_now)
+        return templates_list
 
     def grab_policies_json(self):
         """
@@ -37,21 +82,6 @@ class ApiUtils(object):
         response = urllib2.urlopen(request)
         json_object = json.load(response)
         return json_object
-
-    def grab_templates_json(self):
-        """
-        Return a json containing all templates from live api
-        :return:
-        """
-        request = urllib2.Request(templates_url)
-        response = urllib2.urlopen(request)
-        json_object = json.load(response)
-        templates_list = []
-        # for item_now in json_object['templates']['templateDeployments']:
-        #     templates_list.append(item_now)
-        for item_now in json_object['members']:
-            templates_list.append(item_now)
-        return templates_list
 
     def grab_job_json(self, deployment_id):
         """
@@ -85,7 +115,7 @@ class ApiUtils(object):
         json_object = json.load(response)
         return json_object
 
-    def grab_policies_json(self,token):
+    def grab_policies_json_1(self, token):
         """
         Return a json containing all policies from API get request
         :return:
@@ -93,22 +123,6 @@ class ApiUtils(object):
         headers = {
             'X-Auth-Token': token}
         return requests.get('http://192.168.155.238:8080/urest/v1' + '/template', headers=headers).json()
-
-    def request_token(self):
-        headers = {'Authorization': 'Basic aWRtVHJhbnNwb3J0VXNlcjppZG1UcmFuc3BvcnRVc2Vy', 'Accept': 'application/json',
-                   'Content-Type': 'application/json'}
-        requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
-        jdata = json.dumps({
-            "passwordCredentials": {
-                "username": "admin",
-                "password": "cloud"
-            },
-            "tenantName": "PROVIDER"
-        })
-        req = requests.post(
-            "https://192.168.155.238:8443/idm-service/v2.0/tokens", data=jdata, headers=headers, verify=False).json()
-        return req['token']['id']
-
 
 
 if __name__ == "__main__":
@@ -119,6 +133,6 @@ if __name__ == "__main__":
 
     # print "grab_job_json: ",ApiUtils(). grab_job_json('1234')
 
-    # print ApiUtils().grab_authentication_token()
-    print "grab_policies_json: ", ApiUtils().grab_policies_json(ApiUtils().request_token())
-    print "post_request: ", ApiUtils().request_token()
+    print "grab_authentication_token: ", ApiUtils().request_token()
+    print "grab_templates_json: ", ApiUtils().grab_deployments_json('http://192.168.155.238:8080/urest/v1',
+                                                                    '59ea1a9a-4d80-46b1-b3d4-62086cb74e3e')
