@@ -62,7 +62,7 @@ class ViewDeploymentComplianceResultDetailsTest(unittest.TestCase):
         menu_navigation_page.navigate_to("http://localhost:8014/provision")
         menu_navigation_page.navigate_to("http://localhost:8014/provision")
         templates_menu_list_page = TemplatesMenuListPage(self.browser)
-        templates_menu_list_page.click_on_template_item(self.random_templateName)
+        templates_menu_list_page.click_on_template_by_id(self.random_template_id)
 
         template_details_page = TemplateDetailsPage(self.browser)
         template_details_page.select_deployment(self.random_deploymentName)
