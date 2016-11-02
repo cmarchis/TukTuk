@@ -77,3 +77,12 @@ class CompliancePage(WebdriverBase):
                 self.create_list_of_dictionary_for_compliance()) != api_list_compliance and i < 5:
             self.scroll_pg_down()
             i += 1
+
+    def click_compliance(self, compliance_id):
+        compliance_container = self.locate_elements_by_css_selector(POLICY_CONTAINER_SELECTOR)
+        for compliance_now in compliance_container:
+            compliance_list = compliance_now.find_elements_by_css_selector('div div')
+            for item_now in compliance_list:
+                if item_now.get_attribute('aria-label') == compliance_id:
+                    item_now.click()
+                    break

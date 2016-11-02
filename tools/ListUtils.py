@@ -1,12 +1,12 @@
 from __future__ import division
-from tools.ApiUtils import ApiUtils
-from tools.DateUtils import DateUtils
-import random
-import datetime
-import time
 
+import random
+import time
 from operator import itemgetter
+
 import natsort
+
+from tools.DateUtils import DateUtils
 
 
 class ListUtils(object):
@@ -336,43 +336,79 @@ class ListUtils(object):
 
         return deployment_list
 
+    def get_last_remediate_scan_date(self, jobs_json):
+        """
+        For a given json of jobs return the timestamp of the first remediate or scan job
+        :param jobs_json:
+        :return:
+        """
+        list_remediate = []
+        list_scan = []
+        for job in jobs_json:
+            if job['type'] == "REMEDIATE":
+                list_remediate.append(job['startDT'])
+            if job['type'] == "SCAN":
+                list_scan.append(job['startDT'])
+        if len(list_remediate) != 0:
+            return DateUtils().convert_long_to_aplication_format_date(min(list_remediate))
+        else:
+            return DateUtils().convert_long_to_aplication_format_date(min(list_scan))
 
-def get_last_remediate_scan_date(self, jobs_json):
-    """
-    For a given json of jobs return the timestamp of the first remediate or scan job
-    :param jobs_json:
-    :return:
-    """
-    list_remediate = []
-    list_scan = []
-    for job in jobs_json:
-        if job['type'] == "REMEDIATE":
-            list_remediate.append(job['startDT'])
-        if job['type'] == "SCAN":
-            list_scan.append(job['startDT'])
-    if len(list_remediate) != 0:
-        return DateUtils().convert_long_to_aplication_format_date(min(list_remediate))
-    else:
-        return DateUtils().convert_long_to_aplication_format_date(min(list_scan))
+    def grab_resources_from_deployment(self, deployment_id, templtes_list):
+        """
+        Create a list of dictionary for resources of a given deployment id
+        :param deployment_id:
+        :param templtes_list:
+        :return:
+        """
+        resource_list = []
+        for template_now in templtes_list:
+            for details in template_now['deploymentDetails']:
+                if details['deployment']['deploymentId'] == deployment_id:
+                    for resource in details['deployment']['resources']:
+                        list_item = {}
+                        list_item['resourceName'] = resource['resourceName']
+                        list_item['resourceId'] = resource['resourceId']
+                        resource_list.append(list_item)
+        return resource_list
 
+    def grab_resources_from_deployment_mock(self, specific_deployment_json):
+        """
+        Create a list of dictionary for resources of a given deployment id
+        :param deployment_id:
+        :param templtes_list:
+        :return:
+        """
+        resource_list = []
+        for details in specific_deployment_json['resources']:
+            list_item = {}
+            list_item['resourceName'] = details['resourceName']
+            list_item['resourceId'] = details['resourceId']
+            resource_list.append(list_item)
+        return resource_list
 
-def grab_resources_from_deployment(self, deployment_id, templtes_list):
-    """
-    Create a list of dictionary for resources of a given deployment id
-    :param deployment_id:
-    :param templtes_list:
-    :return:
-    """
-    resource_list = []
-    for template_now in templtes_list:
-        for details in template_now['deploymentDetails']:
-            if details['deployment']['deploymentId'] == deployment_id:
-                for resource in details['deployment']['resources']:
-                    list_item = {}
-                    list_item['resourceName'] = resource['resourceName']
-                    list_item['resourceId'] = resource['resourceId']
-                    resource_list.append(list_item)
-    return resource_list
+    def grab_compliance_details_list(self, compliance_json, rule_id):
+        compliance_resources = []
+        for compliance in compliance_json['members']:
+            list_item = {}
+            if compliance['rule']['id'] == rule_id:
+                list_item['compliance_name'] = compliance['rule']['name']
+                list_item['compliance_status'] = compliance['status']
+                list_item['compliance_policy'] = compliance['policy']['name']
+                list_item['compliance_requirement'] = compliance['requirement']['name']
+                list_item['compliance_control'] = compliance['control']['name']
+                compliance_resources.append(list_item)
+        return compliance_resources
+
+    def grab_compliance_name_and_id(self, compliance_json):
+        compliance_resources = []
+        for compliance in compliance_json['members']:
+            list_item = {}
+            list_item['compliance_name'] = compliance['rule']['name']
+            list_item['compliance_id'] = compliance['rule']['id']
+
+            compliance_resources.append(list_item)
+        return compliance_resources
 
 
 def grab_compliance_resources(self, compliance_json):
@@ -486,47 +522,4 @@ def convert_timpestamp_to_compliance_sort_time(self, timestamp):
 
 
 if __name__ == "__main__":
-    # policies_list = ApiUtils().grab_policies_json()
-    # policies_json = ApiUtils().grab_json()
-    # templates_list = ApiUtils().grab_templates_json()
-    resource_compliance_list = ApiUtils().grab_resources_json('7404')
-    # aaa = ListUtils().grab_list_of_policies_types('6170', templates_list)
-    # bbb = ListUtils().grab_total_of_same_policy_type('6170','PolicyType1',templates_list)
-    # print "aaa: ", aaa
-    # print "bbb: ", bbb
-    #
-    # a = ListUtils().grab_variances('6170', 'PolicyType2', templates_list)
-    # b = ListUtils().grab_list_of_deployment_info('2468', templates_list)
-    # total = ListUtils().return_total_compliant_value('6170', 'PolicyType1', templates_list)
-    # actual = ListUtils().grab_compliant_in_MSLO_of_same_policy_type('6170', 'PolicyType1', templates_list)
-    # resource = ListUtils().grab_resources_from_deployment('1234', templates_list)
-    # compl = ListUtils().grab_compliance_resources_key('Requirement', resource_compliance_list)
-    #
-    # print "compl: ", compl
-    #
-    # abc = ListUtils().grab_compliance_resources_key("Requirement", resource_compliance_list)
-    # abc1 = ListUtils().sort_list_dictionary_natural_ascending(abc)
-    # print "abc: ", abc
-    #
-    #
-
-    # offset = time.timezone if (time.localtime().tm_isdst == 0) else time.altzone
-    # print "difference: ", offset / 60 / 60 * -1
-
-
-    # print "date: ", time.strftime("%d/%m/%Y")
-
-    # mylist = sorted(compl, key=itemgetter('name', 'policy_type'))
-    #
-    # print "compl: ", mylist
-    # print "actual: ", actual
-
-    # a = {"key1": 'a', "key2": 'b', "key3": 'c'}
-    # b = {"key1": 'd', "key2": 'e', "key3": 'f'}
-    # undecorated = [a, b]  # how do you sort this list?
-    #
-    # from operator import itemgetter
-    # result = sorted(undecorated, key=itemgetter('key2','key1'))
-    # print "result: ",result
-
-    print "aa: ", ListUtils().convert_timpestamp_to_compliance_sort_time(1477291151000)
+    print "grab_resources_from_deployment: ", ListUtils().grab_resources_from_deployment('1234', )

@@ -1,11 +1,12 @@
 import unittest
+
 from pages.MenuNavigationPage import MenuNavigationPage
 from pages.templates.TemplatesMenuListPage import TemplatesMenuListPage
 from pages.templates.details.TemplateDetailsPage import TemplateDetailsPage
 from tools.DriverUtils import DriverUtils
-from tools.ApiUtils import ApiUtils
 from tools.ListUtils import ListUtils
 from tools.SoftAssert import SoftAssert
+from tools.api.mock.MockApiUtils import ApiUtils
 
 
 class ViewTemplatesTest(unittest.TestCase):

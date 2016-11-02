@@ -1,16 +1,16 @@
 import unittest
 
+from pages.LoginPage import LoginPage
 from pages.MenuNavigationPage import MenuNavigationPage
-from pages.templates.TemplatesMenuListPage import TemplatesMenuListPage
-from pages.templates.details.TemplateDetailsPage import TemplateDetailsPage
 from pages.deployments.DeploymentsMenuHeaderPage import DeploymentsMenuHeaderPage
 from pages.deployments.DeploymentsPage import DeploymentsPage
-
-from tools.DriverUtils import DriverUtils
-from tools.SoftAssert import SoftAssert
-from tools.ListUtils import ListUtils
-from tools.ApiUtils import ApiUtils
+from pages.templates.TemplatesMenuListPage import TemplatesMenuListPage
+from pages.templates.details.TemplateDetailsPage import TemplateDetailsPage
 from tools.ConfigUtils import ConfigUtils
+from tools.DriverUtils import DriverUtils
+from tools.ListUtils import ListUtils
+from tools.SoftAssert import SoftAssert
+from tools.api.mock.MockApiUtils import ApiUtils
 
 
 class AdHocScanComplianceAndRemediateDeploymentTest(unittest.TestCase):
@@ -39,20 +39,20 @@ class AdHocScanComplianceAndRemediateDeploymentTest(unittest.TestCase):
         self.list_of_templates = ListUtils().grab_template_names_and_id(self.templtes_json)
         random_template_dictionary = ListUtils().return_random_from_list(self.list_of_templates)
         self.random_templateID = '7b4ca205-7b75-459c-81f1-a61fc8b6be69'
-        self.random_templateName = 'Oracle Provision Template'
+        self.random_templateName = 'Oracle 12.1.0.2 on RHEL 7.1'
         # self.random_templateID = random_template_dictionary.get('templateID')
         # self.random_templateName = random_template_dictionary.get('templateName')
         print "random_templateName: ", self.random_templateName
         print "self.random_templateID: ", self.random_templateID
-        deploymnet_json = ApiUtils().grab_deployments_json(self.api_url, self.random_templateID)
-        print "deploymnet_json: ",deploymnet_json
+        deploymnet_json = ApiUtils().grab_deployments_from_templates_json(self.api_url, self.random_templateID)
+        print "deploymnet_json: ", deploymnet_json
         self.deployment_list = ListUtils().grab_deployment_name_and_id(deploymnet_json)
         random_deployment_list = ListUtils().return_random_from_list(self.deployment_list)
         random_deployment_id = '113402909'
-        self.random_deployment = 'Deployment Test 2'
+        self.random_deployment = 'Sample Deployment'
         # random_deployment_id = random_deployment_list.get('deploymentId')
         # self.random_deployment = random_deployment_list.get('deploymentName')
-        print "self.random_deployment: ",self.random_deployment
+        print "self.random_deployment: ", self.random_deployment
         job_list = ApiUtils().grab_job_json(random_deployment_id)
         self.api_last_scan_message_date = 'Started ' + ListUtils().get_last_remediate_scan_date(job_list)
 
@@ -60,8 +60,14 @@ class AdHocScanComplianceAndRemediateDeploymentTest(unittest.TestCase):
 
     def test_AdHocScanComplianceAndRemediateDeploymentTest(self):
         menu_navigation_page = MenuNavigationPage(self.browser)
-        menu_navigation_page.navigate_to("http://localhost:8014/provision")
-        menu_navigation_page.navigate_to("http://localhost:8014/provision")
+        menu_navigation_page.navigate_to(self.base_url)
+        menu_navigation_page.navigate_to(self.base_url)
+
+        login_page = LoginPage(self.browser)
+        login_page.input_user_name(self.user_name)
+        login_page.input_user_pass(self.user_pass)
+        login_page.click_login_button()
+
         templates_menu_list_page = TemplatesMenuListPage(self.browser)
         templates_menu_list_page.click_on_template_item(self.random_templateName)
 

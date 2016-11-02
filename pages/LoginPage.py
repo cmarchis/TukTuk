@@ -5,7 +5,7 @@ PASSWORD_SELECTOR = 'input#password'
 LOGIN_BUTTON_SELECTPR = 'input#submit'
 
 
-class CompliancePage(WebdriverBase):
+class LoginPage(WebdriverBase):
     def perform_login(self, user_name, user_pass):
         """
         Perform login with user_name and password. Will also click on submit button

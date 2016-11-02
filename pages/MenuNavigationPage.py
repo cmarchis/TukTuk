@@ -1,6 +1,6 @@
 from tools.WebdriverBase import WebdriverBase
 
-NAVIGATION_CONTAINER_LOCATOR = 'ul.grommetux-tabs a'
+NAVIGATION_CONTAINER_LOCATOR = 'ul.grommetux-tabs li label'
 
 
 class MenuNavigationPage(WebdriverBase):

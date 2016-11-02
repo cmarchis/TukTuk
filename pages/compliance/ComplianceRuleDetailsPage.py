@@ -12,7 +12,7 @@ class ComplianceRuleDetailsPage(WebdriverBase):
         compliance_rule = {}
         compliance_rule['compliance_name'] = compliance_container.find_element_by_css_selector('header h3').text
         compliance_rule['compliance_status'] = compliance_container.find_element_by_css_selector('div h3').text
-        compliance_rule['compliance_date'] = compliance_container.find_element_by_css_selector('div h5 span').text
+        # compliance_rule['compliance_date'] = compliance_container.find_element_by_css_selector('div h5 span').text
         compliance_rule['compliance_policy'] = compliance_container.find_element_by_css_selector(
             'section:nth-child(3) label').text
         compliance_rule['compliance_requirement'] = compliance_container.find_element_by_css_selector(

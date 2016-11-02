@@ -1,16 +1,15 @@
 import unittest
+from operator import itemgetter
 
 from pages.MenuNavigationPage import MenuNavigationPage
 from pages.compliance.CompliancePage import CompliancePage
+from pages.deployments.DeploymentsPage import DeploymentsPage
 from pages.templates.TemplatesMenuListPage import TemplatesMenuListPage
 from pages.templates.details.TemplateDetailsPage import TemplateDetailsPage
-from pages.deployments.DeploymentsPage import DeploymentsPage
-from tools.SoftAssert import SoftAssert
-
 from tools.DriverUtils import DriverUtils
-from tools.ApiUtils import ApiUtils
 from tools.ListUtils import ListUtils
-from operator import itemgetter
+from tools.SoftAssert import SoftAssert
+from tools.api.mock.MockApiUtils import ApiUtils
 
 
 class ViewDeploymentComplianceResultDetailsTest(unittest.TestCase):
@@ -34,7 +33,7 @@ class ViewDeploymentComplianceResultDetailsTest(unittest.TestCase):
         self.random_resource_id = random_resource_list.get('resourceId')
 
         # get Compliance
-        compliance_json = ApiUtils().grab_resources_json(self.random_resource_id)
+        compliance_json = ApiUtils().grab_compliance_json_for_resource_id(self.random_resource_id)
         self.api_compliance_list_dictionary = ListUtils().grab_compliance_resources(compliance_json)
         self.api_sorted_compliance_dictionary = sorted(self.api_compliance_list_dictionary,
                                                        key=itemgetter('name', 'key', 'status'))

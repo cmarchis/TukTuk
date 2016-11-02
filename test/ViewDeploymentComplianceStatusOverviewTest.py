@@ -4,10 +4,10 @@ from pages.MenuNavigationPage import MenuNavigationPage
 from pages.deployments.DeploymentsPage import DeploymentsPage
 from pages.templates.TemplatesMenuListPage import TemplatesMenuListPage
 from pages.templates.details.TemplateDetailsPage import TemplateDetailsPage
-from tools.ApiUtils import ApiUtils
 from tools.DriverUtils import DriverUtils
 from tools.ListUtils import ListUtils
 from tools.SoftAssert import SoftAssert
+from tools.api.mock.MockApiUtils import ApiUtils
 
 
 class ViewDeploymentComplianceStatusOverviewTest(unittest.TestCase):
