@@ -8,10 +8,9 @@ from pages.templates.TemplatesMenuListPage import TemplatesMenuListPage
 from pages.templates.details.TemplateDetailsPage import TemplateDetailsPage
 from tools.ConfigUtils import ConfigUtils
 from tools.DriverUtils import DriverUtils
-from tools.ListUtils import ListUtils
 from tools.SoftAssert import SoftAssert
-# from tools.api.mock.MockApiUtils import ApiUtils
 from tools.api.mock.DataSetup import DataSetup
+from pages.LandingPage import LandingPage
 
 
 class AdHocScanComplianceAndRemediateDeploymentTest(unittest.TestCase):
@@ -33,7 +32,8 @@ class AdHocScanComplianceAndRemediateDeploymentTest(unittest.TestCase):
         self.user_pass = ConfigUtils().read_config_file()['userPass']
         self.api_url = ConfigUtils().read_config_file()['apiBaseURL']
 
-        self.random_template_id = DataSetup().get_random_template_id()
+        # self.random_template_id = DataSetup().get_random_template_id()
+        self.random_template_id = '7b4ca205-7b75-459c-81f1-a61fc8b6be69'
         self.random_deployment_id = DataSetup().grab_random_deployment_by_template_id(self.random_template_id)
 
         self.expected_scan_message = 'SCAN in progress'
@@ -50,10 +50,11 @@ class AdHocScanComplianceAndRemediateDeploymentTest(unittest.TestCase):
         menu_navigation_page.navigate_to(self.base_url)
         menu_navigation_page.navigate_to(self.base_url)
 
-        # login_page = LoginPage(self.browser)
-        # login_page.input_user_name(self.user_name)
-        # login_page.input_user_pass(self.user_pass)
-        # login_page.click_login_button()
+        login_page = LoginPage(self.browser)
+        login_page.perform_login(self.user_name, self.user_pass)
+
+        landing_page = LandingPage(self.browser)
+        landing_page.select_provision()
 
         templates_menu_list_page = TemplatesMenuListPage(self.browser)
         templates_menu_list_page.click_on_template_by_id(self.random_template_id)

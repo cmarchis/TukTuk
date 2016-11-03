@@ -358,6 +358,8 @@ class ListUtils(object):
                 list_remediate.append(job['startDT'])
             if job['type'] == "SCAN":
                 list_scan.append(job['startDT'])
+        print "list_remediate ", list_remediate
+        print "list_scan ", list_scan
         if len(list_remediate) != 0:
             return DateUtils().convert_long_to_aplication_format_date(min(list_remediate))
         else:

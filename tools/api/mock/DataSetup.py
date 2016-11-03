@@ -1,13 +1,20 @@
 from tools.ListUtils import ListUtils
 from tools.api.mock.MockApiUtils import MockApiUtils
+from tools.api.real.RealApiUtils import RealApiUtils
 from tools.ConfigUtils import ConfigUtils
 
 
 class DataSetup(object):
     api_url = ConfigUtils().read_config_file()['apiBaseURL']
+    api_type = ConfigUtils().read_config_file()['apiType']
 
     def grab_template_data(self):
-        return MockApiUtils().grab_templates_json(self.api_url)
+        template_data = ''
+        if self.api_type == 'real':
+            template_data = RealApiUtils().grab_templates_json(self.api_url)
+        elif self.api_type == 'mock':
+            template_data = MockApiUtils().grab_templates_json(self.api_url)
+        return template_data
 
     def get_random_template_id(self):
         list_of_templates = ListUtils().grab_template_names_and_id(self.grab_template_data())
@@ -25,7 +32,11 @@ class DataSetup(object):
     #     return random_deployment_list.get('deploymentId')
 
     def grab_random_deployment_by_template_id(self, template_id):
-        deployments_list = MockApiUtils().grab_deployments_from_templates_json(self.api_url, template_id)
+        deployments_list = ''
+        if self.api_type == 'real':
+            deployments_list = RealApiUtils().grab_deployments_from_templates_json(self.api_url, template_id)
+        elif self.api_type == 'mock':
+            deployments_list = MockApiUtils().grab_deployments_from_templates_json(self.api_url, template_id)
         random_deployment_list = ListUtils().return_random_from_list(deployments_list)
         return random_deployment_list.get('deploymentId')
 
@@ -34,7 +45,11 @@ class DataSetup(object):
     #     return ListUtils().grab_resources_from_deployment_mock(deployment_json_resources)
 
     def grab_random_resource_id_by_deployment_id(self, deployment_id):
-        deployment_json_resources = MockApiUtils().grab_deployments_json(self.api_url, deployment_id)
+        deployment_json_resources = ''
+        if self.api_type == 'real':
+            deployment_json_resources = RealApiUtils().grab_deployments_json(self.api_url, deployment_id)
+        elif self.api_type == 'mock':
+            deployment_json_resources = MockApiUtils().grab_deployments_json(self.api_url, deployment_id)
         resource_list = ListUtils().grab_resources_from_deployment_mock(deployment_json_resources)
         random_resource_list = ListUtils().return_random_from_list(resource_list)
         return random_resource_list.get('resourceId')
@@ -51,23 +66,30 @@ class DataSetup(object):
     # def grab_compliance_data_by_resource_id(self, resource_id):
     #     compliance_json = MockApiUtils().grab_compliance_json_for_resource_id(self.api_url, resource_id)
     #     return compliance_json
+    def grab_compliance_json_for_resource_id(self, resource_id):
+        compliance_json = ''
+        if self.api_type == 'real':
+            compliance_json = RealApiUtils().grab_compliance_json_for_resource_id(self.api_url, resource_id)
+        elif self.api_type == 'mock':
+            compliance_json = MockApiUtils().grab_compliance_json_for_resource_id(self.api_url, resource_id)
+        return compliance_json
 
     def grab_random_compliance_id_by_resource_id(self, resource_id):
-        compliance_json = MockApiUtils().grab_compliance_json_for_resource_id(self.api_url, resource_id)
+        compliance_json = self.grab_compliance_json_for_resource_id(resource_id)
         compliance_list = ListUtils().grab_compliance_name_and_id(compliance_json)
         return ListUtils().return_random_from_list(compliance_list).get('compliance_id')
 
     def grab_compliance_details(self, resource_id, compliance_id):
-        compliance_json = MockApiUtils().grab_compliance_json_for_resource_id(self.api_url, resource_id)
+        compliance_json = self.grab_compliance_json_for_resource_id(resource_id)
         return ListUtils().grab_compliance_details_list(compliance_json, compliance_id)
 
     def get_number_of_compliance(self, resource_id):
-        compliance_json = MockApiUtils().grab_compliance_json_for_resource_id(self.api_url, resource_id)
+        compliance_json = self.grab_compliance_json_for_resource_id(resource_id)
         compliance_list = ListUtils().grab_compliance_name_and_id(compliance_json)
         return len(compliance_list)
 
     def grab_compliance_list_by_resource(self, resource_id):
-        compliance_json = MockApiUtils().grab_compliance_json_for_resource_id(self.api_url, resource_id)
+        compliance_json = self.grab_compliance_json_for_resource_id(resource_id)
         compliance_list = ListUtils().grab_compliance_resources(compliance_json)
         return compliance_list
 
@@ -77,12 +99,16 @@ class DataSetup(object):
         return list_of_given_status
 
     def grab_compliance_list_by_resources_sorted_by_key(self, sort_option, resource_id):
-        compliance_json = MockApiUtils().grab_compliance_json_for_resource_id(self.api_url, resource_id)
+        compliance_json = self.grab_compliance_json_for_resource_id(resource_id)
         compliance_list = ListUtils().grab_compliance_resources_key_sorted_by_key(sort_option, compliance_json)
         return compliance_list
 
     def grab_last_remediate_scan_date(self, deployment_id):
-        jobs_json = MockApiUtils().grab_job_json(deployment_id)
+        jobs_json = ''
+        if self.api_type == 'real':
+            jobs_json = RealApiUtils().grab_job_json(self.api_url, deployment_id)
+        elif self.api_type == 'mock':
+            jobs_json = MockApiUtils().grab_job_json(self.api_url, deployment_id)
         return ListUtils().get_last_remediate_scan_date(jobs_json)
 
 

@@ -85,12 +85,12 @@ class MockApiUtils(object):
         json_object = json.load(response)
         return json_object
 
-    def grab_job_json(self, deployment_id):
+    def grab_job_json(self, api_url, deployment_id):
         """
         Return the json grabbed from api
         :return:
         """
-        request = urllib2.Request('http://localhost:8010/urest/v1/deployment/' + deployment_id + '/job')
+        request = urllib2.Request(api_url + '/deployment/' + deployment_id + '/job')
         response = urllib2.urlopen(request)
         json_object = json.load(response)
         return json_object

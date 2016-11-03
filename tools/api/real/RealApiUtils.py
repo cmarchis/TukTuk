@@ -4,9 +4,12 @@ import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import base64
 
-policies_url = 'http://localhost:8010/urest/v1/deployments'
+# policies_url = 'http://localhost:8010/urest/v1/deployments'
 templates_url = '/template'
-resources_url = 'http://localhost:8010/urest/v1/compliance/compliance_detail?query=resource.id%20EQ%207404'
+deployment_url = '/deployment'
+
+
+# resources_url = 'http://localhost:8010/urest/v1/compliance/compliance_detail?query=resource.id%20EQ%207404'
 
 
 class RealApiUtils(object):
@@ -44,14 +47,14 @@ class RealApiUtils(object):
             templates_list.append(item_now)
         return templates_list
 
-    def grab_deployments_json(self, api_url, template_id):
+    def grab_deployments_from_templates_json(self, api_url, template_id):
         """
         Return a json containing all deployments from live api
         :return:
         """
         headers = {
             'X-Auth-Token': self.request_token()}
-        request = urllib2.Request(api_url + templates_url + '/' + template_id, headers=headers)
+        request = urllib2.Request(api_url + templates_url + '/' + template_id + '?view=condense', headers=headers)
         response = urllib2.urlopen(request)
         json_object = json.load(response)
         templates_list = []
@@ -59,47 +62,66 @@ class RealApiUtils(object):
             templates_list.append(item_now)
         return templates_list
 
-    def grab_policies_json(self):
+    def grab_deployments_json(self, api_url, deployment_id):
         """
-        Return a json containing all policies from live api
+        Return a json containing all deployments from live api
         :return:
         """
-        request = urllib2.Request(policies_url)
-        response = urllib2.urlopen(request)
-        json_object = json.load(response)
-        policies_list = []
-        for item_now in json_object['deployment']['attachedPolicies']:
-            policies_list.append(item_now['policy'])
-
-        return policies_list
-
-    def grab_json(self):
-        """
-        Return the json grabbed from api
-        :return:
-        """
-        request = urllib2.Request(policies_url)
-        response = urllib2.urlopen(request)
-        json_object = json.load(response)
-        return json_object
-
-    def grab_job_json(self, deployment_id):
-        """
-        Return the json grabbed from api
-        :return:
-        """
-        request = urllib2.Request('http://localhost:8010/urest/v1/deployment/' + deployment_id + '/job')
-        response = urllib2.urlopen(request)
-        json_object = json.load(response)
-        return json_object
-
-    def grab_resources_json(self, resource_id):
-        """
-        Return the json grabbed from api
-        :return:
-        """
+        headers = {
+            'X-Auth-Token': self.request_token()}
         request = urllib2.Request(
-            'http://localhost:8010/urest/v1/compliance/compliance_detail?query=resource.id%20EQ%20' + resource_id + '')
+            api_url + deployment_url + '/' + deployment_id + '?fields=Resources,AttachedPolicy.Policy,AttachedPolicy.Policy.PolicyType',
+            headers=headers)
+        response = urllib2.urlopen(request)
+        json_object = json.load(response)
+        return json_object
+
+    # def grab_policies_json(self):
+    #     """
+    #     Return a json containing all policies from live api
+    #     :return:
+    #     """
+    #     request = urllib2.Request(policies_url)
+    #     response = urllib2.urlopen(request)
+    #     json_object = json.load(response)
+    #     policies_list = []
+    #     for item_now in json_object['deployment']['attachedPolicies']:
+    #         policies_list.append(item_now['policy'])
+    #
+    #     return policies_list
+    #
+    # def grab_json(self):
+    #     """
+    #     Return the json grabbed from api
+    #     :return:
+    #     """
+    #     request = urllib2.Request(policies_url)
+    #     response = urllib2.urlopen(request)
+    #     json_object = json.load(response)
+    #     return json_object
+
+    def grab_job_json(self, api_url, deployment_id):
+        """
+        Return the json grabbed from api
+        :return:
+        """
+        headers = {
+            'X-Auth-Token': self.request_token()}
+        request = urllib2.Request(api_url + '/deployment/' + deployment_id + '/job?type=Compliance', headers=headers)
+        response = urllib2.urlopen(request)
+        json_object = json.load(response)
+        return json_object
+
+    def grab_compliance_json_for_resource_id(self, api_url, resource_id):
+        """
+        Return the json grabbed from api
+        :return:
+        """
+        headers = {
+            'X-Auth-Token': self.request_token()}
+        request = urllib2.Request(
+            api_url + '/compliance/compliance_detail?query=resource.id%20EQ%20' + resource_id + '',
+            headers=headers)
         response = urllib2.urlopen(request)
         json_object = json.load(response)
         return json_object

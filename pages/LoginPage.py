@@ -1,4 +1,5 @@
 from tools.WebdriverBase import WebdriverBase
+from tools.ConfigUtils import ConfigUtils
 
 USERNAME_SELECTOR = 'input#username'
 PASSWORD_SELECTOR = 'input#password'
@@ -6,6 +7,8 @@ LOGIN_BUTTON_SELECTPR = 'input#submit'
 
 
 class LoginPage(WebdriverBase):
+    api_type = ConfigUtils().read_config_file()['apiType']
+
     def perform_login(self, user_name, user_pass):
         """
         Perform login with user_name and password. Will also click on submit button
@@ -13,9 +16,10 @@ class LoginPage(WebdriverBase):
         :param user_pass:
         :return:
         """
-        self.input_user_name(user_name)
-        self.input_user_pass(user_pass)
-        self.click_login_button()
+        if self.api_type == 'real':
+            self.input_user_name(user_name)
+            self.input_user_pass(user_pass)
+            self.click_login_button()
 
     def input_user_name(self, user_name):
         """
