@@ -7,6 +7,8 @@ FILTER_SELETOR = "button.index-filters__menu"
 STATUS_SELECTOR = "div.index-filter__body label span.grommetux-check-box__label span"
 SORT_SELECTOR = "div > select"
 SORT_ICON_SELECTOR = "div.grommetux-menu__drop--align-right span>svg.grommetux-control-icon-filter"
+SORT_ASCENDING = "svg.grommetux-control-icon-link-down"
+SORT_DESCENDING = "svg.grommetux-control-icon-link-up"
 
 
 class CompliancePage(WebdriverBase):
@@ -24,7 +26,7 @@ class CompliancePage(WebdriverBase):
                 list_item['key'] = item_now.find_element_by_css_selector("header label").text
                 list_item['name'] = item_now2.find_element_by_css_selector("label.grommetux-label--medium strong").text
                 abc = item_now2.find_element_by_css_selector("label.grommetux-label--medium strong").text
-                list_item['status'] = (item_now2.find_element_by_css_selector("label:last-child").text).upper()
+                list_item['status'] = item_now2.find_element_by_css_selector("label:last-child").text
                 return_list.append(list_item)
         return return_list
 
@@ -62,6 +64,18 @@ class CompliancePage(WebdriverBase):
         filter_button_open = self.locate_element_by_css_selector(SORT_ICON_SELECTOR)
         filter_button_open.click()
 
+    def select_sort_order(self, sort_order):
+        filter_button = self.locate_element_by_css_selector(FILTER_SELETOR)
+        filter_button.click()
+        if sort_order == "ascending":
+            sort_button = self.locate_element_by_css_selector(SORT_ASCENDING)
+            sort_button.click()
+        elif sort_order == "descending":
+            sort_button = self.locate_element_by_css_selector(SORT_DESCENDING)
+            sort_button.click()
+        filter_button_open = self.locate_element_by_css_selector(SORT_ICON_SELECTOR)
+        filter_button_open.click()
+
     def scroll_until_all_policies_types_are_visible(self, api_list_compliance):
         """
         Scroll until the length of policies types list grabbed from application is the same as the length of list of
@@ -78,11 +92,13 @@ class CompliancePage(WebdriverBase):
             self.scroll_pg_down()
             i += 1
 
-    def click_compliance(self, compliance_id):
+    def click_compliance_by_id(self, compliance_id):
         compliance_container = self.locate_elements_by_css_selector(POLICY_CONTAINER_SELECTOR)
         for compliance_now in compliance_container:
             compliance_list = compliance_now.find_elements_by_css_selector('div div')
             for item_now in compliance_list:
-                if item_now.get_attribute('aria-label') == compliance_id:
+                if item_now.get_attribute("id") == compliance_id:
                     item_now.click()
+                    time.sleep(2)
+                    print "click_compliance_by_id"
                     break

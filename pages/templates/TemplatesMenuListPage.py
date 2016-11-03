@@ -1,4 +1,5 @@
 from tools.WebdriverBase import WebdriverBase
+import time
 
 TEMPLATE_LIST_CONTAINER = 'div.grommetux-box--full-vertical'
 TEMPLATE_LIST_ITEMS = 'div[id][class*=box]:not([tabindex])'
@@ -21,6 +22,7 @@ class TemplatesMenuListPage(WebdriverBase):
         for menu_item in menu_links_list:
             if menu_item.get_attribute('id') == id:
                 menu_item.click()
+                time.sleep(2)
                 break
 
     def grab_names_list(self):

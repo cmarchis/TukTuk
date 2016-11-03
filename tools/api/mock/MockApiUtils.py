@@ -28,6 +28,15 @@ class MockApiUtils(object):
             templates_list.append(item_now)
         return templates_list
 
+    def grab_template_by_template_id(self, template_id):
+        request = urllib2.Request(api_url + templates_url)
+        response = urllib2.urlopen(request)
+        json_object = json.load(response)
+        templates_list = []
+        for item_now in json_object['members']:
+            templates_list.append(item_now)
+        return templates_list
+
     def grab_deployments_from_templates_json(self, api_url, template_id):
         """
         Return a json containing all deployments from live api

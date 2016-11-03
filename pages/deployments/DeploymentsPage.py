@@ -157,6 +157,7 @@ class DeploymentsPage(WebdriverBase):
     def select_resource_by_id(self, resource_id):
         resource_list = self.locate_elements_by_css_selector(RESOURCES_LIST_SELECTOR)
         for resource in resource_list:
-            if resource.get_attribute("aria-label") == resource_id:
+            if resource.get_attribute("id") == resource_id:
                 resource.click()
+                time.sleep(2)
                 break

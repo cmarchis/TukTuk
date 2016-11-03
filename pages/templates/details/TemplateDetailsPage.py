@@ -1,13 +1,15 @@
 from tools.WebdriverBase import WebdriverBase
-
+import time
 
 GROUP_CONTAINERS = '.grommetux-box--pad-small'
-DEPLOYMENT_CONTAINER = 'div.grommetux-box--pad-small:last-child ul ul li'
+DEPLOYMENT_LIST = 'div.grommetux-box--pad-small:last-child ul ul li'
+
 
 class TemplateDetailsPage(WebdriverBase):
     """
     Details related to template. Page contains Resources, Policies, Deployments and actions(deploy, schedule) on current template
     """
+
     def grab_resources_data(self):
         return self.grab_generic_data(0)
 
@@ -28,14 +30,18 @@ class TemplateDetailsPage(WebdriverBase):
         result_list.pop(0)
         return result_list
 
-    def select_deployment(self,deployment_name):
-        deployments_list = self.locate_elements_by_css_selector(DEPLOYMENT_CONTAINER)
+    def select_deployment(self, deployment_name):
+        deployments_list = self.locate_elements_by_css_selector(DEPLOYMENT_LIST)
         for deployment in deployments_list:
-            list_deployment_name=deployment.find_element_by_css_selector('div:first-child').text
+            list_deployment_name = deployment.find_element_by_css_selector('div:first-child').text
             if list_deployment_name == deployment_name:
                 deployment.click()
                 break
 
-
-
-
+    def select_deployment_by_id(self, deployment_id):
+        deployments_list = self.locate_elements_by_css_selector(DEPLOYMENT_LIST)
+        for deployment in deployments_list:
+            if deployment.get_attribute("id") == deployment_id:
+                deployment.click()
+                time.sleep(2)
+                break
