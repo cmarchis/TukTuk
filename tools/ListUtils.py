@@ -208,7 +208,6 @@ class ListUtils(object):
             policy['variances'] = str(policy['variances']) + ' Variances'
         return policy_type_list
 
-
     def grab_total_of_same_policy_type(self, deployment_id, policy_type, templtes_list):
         """
         From the policies list, return the number of policies items with the same type
@@ -586,10 +585,18 @@ class ListUtils(object):
 
         return credential_list
 
+    def grab_credential_name_list(self, credential_json):
+        credential_list = []
+        for credential in credential_json:
+            credential_list.append(credential['name'])
+        return credential_list
+
+
+
 if __name__ == "__main__":
     # print "grab_resources_from_deployment: ", ListUtils().grab_resources_from_deployment('1234', )
     print "aa", 'AAAA'.title()
 
-    credential_json =  RealApiUtils().grab_credential_json()
+    credential_json = RealApiUtils().grab_credential_json()
     print ListUtils().grab_credential_list_by_name(credential_json, 'credCHAN')
     print ListUtils().grab_credential_list_by_name(credential_json, 'blbla')

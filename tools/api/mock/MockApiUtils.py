@@ -95,6 +95,7 @@ class MockApiUtils(object):
         json_object = json.load(response)
         return json_object
 
+
     def grab_compliance_json_for_resource_id(self, api_url, resource_id):
         """
         Return the json grabbed from api
@@ -109,6 +110,16 @@ class MockApiUtils(object):
     def create_new_scan_job_for_deployment(self, api_url, deployment_id):
         r = requests.post(api_url+'/deployment/'+deployment_id+'/scan_compliance')
         return r.status_code
+
+    def grab_credential_json(self, api_url, ):
+        """
+        Return the json grabbed from api
+        :return:
+        """
+        request = urllib2.Request(api_url + '/credential')
+        response = urllib2.urlopen(request)
+        json_object = json.load(response)
+        return json_object
 
 
 if __name__ == "__main__":

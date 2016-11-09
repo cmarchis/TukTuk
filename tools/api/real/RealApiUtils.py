@@ -18,12 +18,14 @@ class RealApiUtils(object):
     """
     API calls to the GUI Rest API. These are used as expected data for validation
     """
+
     def request_token(self):
         headers = {'Authorization': 'Basic aWRtVHJhbnNwb3J0VXNlcjppZG1UcmFuc3BvcnRVc2Vy',
                    'Accept': 'application/json',
                    'Content-Type': 'application/json'}
         requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
-        jdata = json.dumps({"passwordCredentials": {"username": "admin", "password": "cloud"}, "tenantName": "PROVIDER"})
+        jdata = json.dumps(
+            {"passwordCredentials": {"username": "admin", "password": "cloud"}, "tenantName": "PROVIDER"})
         req = requests.post(api_url_token, data=jdata, headers=headers, verify=False).json()
         return req['token']['id']
 
@@ -61,7 +63,9 @@ class RealApiUtils(object):
         :return:
         """
         headers = {'X-Auth-Token': self.request_token()}
-        request = urllib2.Request(api_url + deployment_url + '/' + deployment_id + '?fields=Resources,AttachedPolicy.Policy,AttachedPolicy.Policy.PolicyType', headers=headers)
+        request = urllib2.Request(
+            api_url + deployment_url + '/' + deployment_id + '?fields=Resources,AttachedPolicy.Policy,AttachedPolicy.Policy.PolicyType',
+            headers=headers)
         response = urllib2.urlopen(request)
         json_object = json.load(response)
         return json_object
@@ -83,7 +87,16 @@ class RealApiUtils(object):
         :return:
         """
         headers = {'X-Auth-Token': self.request_token()}
-        request = urllib2.Request(api_url + '/compliance/compliance_detail?query=resource.id%20EQ%20' + resource_id + '', headers=headers)
+        request = urllib2.Request(
+            api_url + '/compliance/compliance_detail?query=resource.id%20EQ%20' + resource_id + '', headers=headers)
+        response = urllib2.urlopen(request)
+        json_object = json.load(response)
+        return json_object
+
+    def grab_credential_json(self, api_url):
+        headers = {'X-Auth-Token': self.request_token()}
+        request = urllib2.Request(
+            api_url + '/credential', headers=headers)
         response = urllib2.urlopen(request)
         json_object = json.load(response)
         return json_object
@@ -117,5 +130,6 @@ class RealApiUtils(object):
 
 
 if __name__ == "__main__":
-    print RealApiUtils().create_new_scan_job_for_deployment('https://192.168.155.238:8081/urest/v1', 'd10c819a38ccb5f7f3f4')
+    print RealApiUtils().create_new_scan_job_for_deployment('https://192.168.155.238:8081/urest/v1',
+                                                            'd10c819a38ccb5f7f3f4')
     print RealApiUtils().grab_credential_json()

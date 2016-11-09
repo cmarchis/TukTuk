@@ -160,6 +160,18 @@ class DataSetup(object):
         policy_list = ListUtils().create_policy_list_from_policy_dictionary_list(policies_list)
         return ListUtils().create_list_of_policies_bar_dimensions(policy_list, dimension, deployment_json)
 
+    def grab_credebtial_json(self):
+        credential_json = ''
+        if self.api_type == 'real':
+            credential_json = RealApiUtils().grab_credential_json(self.api_url)
+        elif self.api_type == 'mock':
+            credential_json = MockApiUtils().grab_credential_json(self.api_url)
+        return credential_json
+
+    def grab_list_of_credential(self):
+        credntial_json = self.grab_credebtial_json()
+        return ListUtils().grab_credential_name_list(credntial_json)
+
 
 if __name__ == "__main__":
     # print DataSetup().get_random_template_id()
