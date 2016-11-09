@@ -5,7 +5,7 @@ import time
 from operator import itemgetter
 
 import natsort
-
+from tools.api.real.RealApiUtils import RealApiUtils
 from tools.DateUtils import DateUtils
 
 
@@ -567,7 +567,29 @@ class ListUtils(object):
             policy_list.append(policy['type'])
         return policy_list
 
+    def grab_credential_list_by_name(self, credential_list_json, name):
+        """
+        From the credential request, it will grab the list of credentials, from the data section, for a given name
+        :param credential_list_json:
+        :param name:
+        :return:
+        """
+        credential_list = []
+        for credential_now in credential_list_json:
+            if credential_now['name'] == name:
+                for credential_item in credential_now['data']:
+                    credential_data = {}
+                    credential_data['id'] = credential_item['id']
+                    credential_data['key'] = credential_item['key']
+                    credential_data['value'] = credential_item['value']
+                    credential_list.append(credential_data)
+
+        return credential_list
 
 if __name__ == "__main__":
     # print "grab_resources_from_deployment: ", ListUtils().grab_resources_from_deployment('1234', )
     print "aa", 'AAAA'.title()
+
+    credential_json =  RealApiUtils().grab_credential_json()
+    print ListUtils().grab_credential_list_by_name(credential_json, 'credCHAN')
+    print ListUtils().grab_credential_list_by_name(credential_json, 'blbla')
