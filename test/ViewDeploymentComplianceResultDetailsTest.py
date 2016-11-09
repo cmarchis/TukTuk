@@ -6,17 +6,26 @@ from pages.compliance.CompliancePage import CompliancePage
 from pages.deployments.DeploymentsPage import DeploymentsPage
 from pages.templates.TemplatesMenuListPage import TemplatesMenuListPage
 from pages.templates.details.TemplateDetailsPage import TemplateDetailsPage
+from pages.LoginPage import LoginPage
+from pages.LandingPage import LandingPage
 from tools.DriverUtils import DriverUtils
 from tools.ListUtils import ListUtils
 from tools.SoftAssert import SoftAssert
 from tools.api.mock.DataSetup import DataSetup
+from tools.ConfigUtils import ConfigUtils
 
 
 class ViewDeploymentComplianceResultDetailsTest(unittest.TestCase):
     def setUp(self):
+        self.base_url = ConfigUtils().read_config_file()['baseURL']
+        self.user_name = ConfigUtils().read_config_file()['userName']
+        self.user_pass = ConfigUtils().read_config_file()['userPass']
+        self.api_url = ConfigUtils().read_config_file()['apiBaseURL']
+
         self.random_template_id = DataSetup().get_random_template_id()
         self.random_deployment_id = DataSetup().grab_random_deployment_by_template_id(self.random_template_id)
         self.random_resource_id = DataSetup().grab_random_resource_id_by_deployment_id(self.random_deployment_id)
+
         self.number_of_compliance = DataSetup().get_number_of_compliance(self.random_resource_id)
         compliance_list_by_resource = DataSetup().grab_compliance_list_by_resource(self.random_resource_id)
         self.api_sorted_compliance_dictionary = sorted(compliance_list_by_resource,
@@ -39,8 +48,15 @@ class ViewDeploymentComplianceResultDetailsTest(unittest.TestCase):
 
     def test_ViewDeploymentComplianceStatusOverviewTest(self):
         menu_navigation_page = MenuNavigationPage(self.browser)
-        menu_navigation_page.navigate_to("http://localhost:8014/provision")
-        menu_navigation_page.navigate_to("http://localhost:8014/provision")
+        menu_navigation_page.navigate_to(self.base_url)
+        menu_navigation_page.navigate_to(self.base_url)
+
+        login_page = LoginPage(self.browser)
+        login_page.perform_login(self.user_name, self.user_pass)
+
+        landing_page = LandingPage(self.browser)
+        landing_page.select_provision()
+
         templates_menu_list_page = TemplatesMenuListPage(self.browser)
         templates_menu_list_page.click_on_template_by_id(self.random_template_id)
 
@@ -51,7 +67,7 @@ class ViewDeploymentComplianceResultDetailsTest(unittest.TestCase):
         deployment_page.select_resource_by_id(self.random_resource_id)
 
         compliance_page = CompliancePage(self.browser)
-        compliance_page.scroll_until_all_policies_types_are_visible(self.number_of_compliance)
+        compliance_page.scroll_until_all_compliance_are_visible(self.number_of_compliance)
         aplication_compliance_list = compliance_page.create_list_of_dictionary_for_compliance()
 
         aplication_sorted_compliance_dictionary = sorted(aplication_compliance_list,
@@ -64,7 +80,7 @@ class ViewDeploymentComplianceResultDetailsTest(unittest.TestCase):
 
         compliance_page.select_status(self.status)
 
-        compliance_page.scroll_until_all_policies_types_are_visible(self.number_of_compliance)
+        compliance_page.scroll_until_all_compliance_are_visible(self.number_of_compliance)
         aplication_compliance_filter_list_dictionary = compliance_page.create_list_of_dictionary_for_compliance()
         aplication_compliance_filter_list_dictionary_sorted = sorted(aplication_compliance_filter_list_dictionary,
                                                                      key=itemgetter('name', 'key', 'status'))
@@ -77,7 +93,7 @@ class ViewDeploymentComplianceResultDetailsTest(unittest.TestCase):
         compliance_page.select_status('All')
         compliance_page.select_sort_option(self.sort_option)
         #
-        compliance_page.scroll_until_all_policies_types_are_visible(self.number_of_compliance)
+        compliance_page.scroll_until_all_compliance_are_visible(self.number_of_compliance)
         aplication_compliance_list_dictionary_sort = compliance_page.create_list_of_dictionary_for_compliance()
 
         SoftAssert().verfy_equals_true(
@@ -86,7 +102,7 @@ class ViewDeploymentComplianceResultDetailsTest(unittest.TestCase):
             aplication_compliance_list_dictionary_sort)
 
         compliance_page.select_sort_order('descending')
-        compliance_page.scroll_until_all_policies_types_are_visible(self.number_of_compliance)
+        compliance_page.scroll_until_all_compliance_are_visible(self.number_of_compliance)
         aplication_compliance_list_dictionary_sort_order = compliance_page.create_list_of_dictionary_for_compliance()
 
         SoftAssert().verfy_equals_true(

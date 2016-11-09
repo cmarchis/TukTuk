@@ -5,7 +5,6 @@ from selenium.webdriver.common.keys import Keys
 import time
 
 
-
 class WebdriverBase(object):
     ELEMENT_WAIT = 30
 
@@ -41,17 +40,25 @@ class WebdriverBase(object):
         return WebDriverWait(self.driver, self.ELEMENT_WAIT).until(
             EC.visibility_of_any_elements_located((By.CSS_SELECTOR, css_locator)))
 
-
     def scroll_pg_down(self):
         """
         Scroll in webpage by simulating user action of pressing page down button
         :return:
         """
         time.sleep(1)
-        # scroll = self.driver.find_element_by_xpath("//div[3]")
         scroll = self.driver.find_element_by_css_selector(
             "div.index-tiles__section:first-child div.grommetux-tile--selectable:first-child")
-        scroll.send_keys(Keys.PAGE_DOWN)
+        scroll.send_keys(Keys.END)
+
+    def scroll_to_home(self):
+        """
+        Scroll in webpage by simulating user action of pressing page down button
+        :return:
+        """
+        time.sleep(1)
+        scroll = self.driver.find_element_by_css_selector(
+            "div.index-tiles__section:first-child div.grommetux-tile--selectable:first-child")
+        scroll.send_keys(Keys.HOME)
 
     def close_driver(self):
         """

@@ -106,10 +106,16 @@ class MockApiUtils(object):
         json_object = json.load(response)
         return json_object
 
+    def create_new_scan_job_for_deployment(self, api_url, deployment_id):
+        r = requests.post(api_url+'/deployment/'+deployment_id+'/scan_compliance')
+        return r.status_code
+
 
 if __name__ == "__main__":
-    print 'grab_templates_json', MockApiUtils().grab_templates_json('http://localhost:8010/urest/v1')
-    print 'grab_deployments_json', MockApiUtils().grab_deployments_from_templates_json('http://localhost:8010/urest/v1',
-                                                                                       '1234')
-    print 'grab_deployments_json', MockApiUtils().grab_deployments_json('http://localhost:8010/urest/v1',
-                                                                        '1234')
+    # print 'grab_templates_json', MockApiUtils().grab_templates_json('http://localhost:8010/urest/v1')
+    # print 'grab_deployments_json', MockApiUtils().grab_deployments_from_templates_json('http://localhost:8010/urest/v1',
+    #                                                                                    '1234')
+    # print 'grab_deployments_json', MockApiUtils().grab_deployments_json('http://localhost:8010/urest/v1',
+    #                                                                     '1234')
+
+    print 'create_new_scan_job_for_deployment: ',MockApiUtils().create_new_scan_job_for_deployment('http://localhost:8010/urest/v1','1234')

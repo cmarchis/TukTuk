@@ -32,9 +32,11 @@ class AdHocScanComplianceAndRemediateDeploymentTest(unittest.TestCase):
         self.user_pass = ConfigUtils().read_config_file()['userPass']
         self.api_url = ConfigUtils().read_config_file()['apiBaseURL']
 
-        # self.random_template_id = DataSetup().get_random_template_id()
-        self.random_template_id = '7b4ca205-7b75-459c-81f1-a61fc8b6be69'
+        self.random_template_id = DataSetup().get_random_template_id()
+        # self.random_template_id = '7b4ca205-7b75-459c-81f1-a61fc8b6be69'
         self.random_deployment_id = DataSetup().grab_random_deployment_by_template_id(self.random_template_id)
+
+        DataSetup().create_new_scan_job(self.random_deployment_id)
 
         self.expected_scan_message = 'SCAN in progress'
         self.expected_remediate_message = 'REMEDIATE in progress'

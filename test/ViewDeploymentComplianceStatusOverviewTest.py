@@ -7,7 +7,10 @@ from pages.templates.details.TemplateDetailsPage import TemplateDetailsPage
 from tools.DriverUtils import DriverUtils
 from tools.ListUtils import ListUtils
 from tools.SoftAssert import SoftAssert
-from tools.api.mock.MockApiUtils import ApiUtils
+from tools.ConfigUtils import ConfigUtils
+from tools.api.mock.DataSetup import DataSetup
+from pages.LoginPage import LoginPage
+from pages.LandingPage import LandingPage
 
 
 class ViewDeploymentComplianceStatusOverviewTest(unittest.TestCase):
@@ -24,74 +27,67 @@ class ViewDeploymentComplianceStatusOverviewTest(unittest.TestCase):
     """
 
     def setUp(self):
-        self.templtes_json = ApiUtils().grab_templates_json()
-        self.list_of_templates = ListUtils().grab_template_names_and_id(self.templtes_json)
-        random_template_list = ListUtils().return_random_from_list(self.list_of_templates)
-        self.random_templateID = random_template_list.get('templateID')
-        self.random_templateName = random_template_list.get('templateName')
-        # self.random_templateID = 1234
-        # self.random_templateName = '1 - Oracle Provision Template'
+        self.base_url = ConfigUtils().read_config_file()['baseURL']
+        self.user_name = ConfigUtils().read_config_file()['userName']
+        self.user_pass = ConfigUtils().read_config_file()['userPass']
+        self.api_url = ConfigUtils().read_config_file()['apiBaseURL']
 
-        self.deployment_list = ListUtils().grab_deployment_name_and_id(self.random_templateID, self.templtes_json)
-        random_deployment_list = ListUtils().return_random_from_list(self.deployment_list)
-        self.random_deploymentName = random_deployment_list.get('deploymentName')
-        self.random_deploymentID = random_deployment_list.get('deploymentId')
-        # self.random_deploymentName = '1 - Sample Deployment'
-        # self.random_deploymentID = 1234
+        self.random_template_id = '1234'
+        self.random_deployment_id = '1234'
+        # self.random_template_id = DataSetup().get_random_template_id()
+        # self.random_deployment_id = DataSetup().grab_random_deployment_by_template_id(self.random_template_id)
+        self.random_resource_id = DataSetup().grab_random_resource_id_by_deployment_id(self.random_deployment_id)
 
-        print "random_deploymentName: ", self.random_deploymentName
+        api_policies_types_dictionary = DataSetup().grab_policies_types_dictionary_list_for_deployment_id(
+            self.random_deployment_id)
+        self.sorted_api_policies_types_dictionary = ListUtils().sort_list_alphabetically_by('type',
+                                                                                            api_policies_types_dictionary)
+        self.api_resources_dictionary = DataSetup().grab_list_dictionary_of_resources_for_deployment_id(
+            self.random_deployment_id)
 
-        self.api_policy_types_list = ListUtils().grab_list_of_policies_types(self.random_deploymentID,
-                                                                             self.templtes_json)
-        print "api_policy_types_list: ", self.api_policy_types_list
-
-        no_duplicate_policy_type_list = ListUtils().remove_duplicates_from_list(self.api_policy_types_list)
-        policies_model_list = ListUtils().create_list_of_policies_model(self.random_deploymentID,
-                                                                        self.templtes_json,
-                                                                        no_duplicate_policy_type_list)
-        self.api_sorted_policies_model_list = ListUtils().sort_list_alphabetically_by('type', policies_model_list)
-        print "policies_model_list: ", self.api_sorted_policies_model_list
-
-        self.api_resource_list_with_status = ListUtils().grab_list_of_resources_with_status(self.random_deploymentID,
-                                                                                            self.templtes_json)
         aplication_bar_dimension = 192
-        self.api_policies_dimensions_bar_list = ListUtils().sort_list_alphabetically_by('type',
-                                                                                        ListUtils().create_list_of_policies_bar_dimensions(
-                                                                                            self.random_deploymentID,
-                                                                                            no_duplicate_policy_type_list,
-                                                                                            self.templtes_json,
-                                                                                            aplication_bar_dimension))
-        print "self.api_policies_dimensions_bar_list: ", self.api_policies_dimensions_bar_list
+
+        self.api_policies_dimension_bar_dictionary_list = DataSetup().grab_list_of_policies_bar_dimensions(
+            self.random_deployment_id, aplication_bar_dimension)
 
         self.browser = DriverUtils().start_driver()
 
     def test_ViewDeploymentComplianceStatusOverviewTest(self):
         menu_navigation_page = MenuNavigationPage(self.browser)
-        menu_navigation_page.navigate_to("http://localhost:8014/provision")
-        menu_navigation_page.navigate_to("http://localhost:8014/provision")
+
+        menu_navigation_page.navigate_to(self.base_url)
+        menu_navigation_page.navigate_to(self.base_url)
+
+        login_page = LoginPage(self.browser)
+        login_page.perform_login(self.user_name, self.user_pass)
+
+        landing_page = LandingPage(self.browser)
+        landing_page.select_provision()
 
         templates_menu_list_page = TemplatesMenuListPage(self.browser)
-        templates_menu_list_page.click_on_template_item(self.random_templateName)
+        templates_menu_list_page.click_on_template_by_id(self.random_template_id)
 
         template_details_page = TemplateDetailsPage(self.browser)
-        template_details_page.select_deployment(self.random_deploymentName)
+        template_details_page.select_deployment_by_id(self.random_deployment_id)
 
         deployment_page = DeploymentsPage(self.browser)
         aplication_policies_list = ListUtils().sort_list_alphabetically_by('type',
                                                                            deployment_page.create_list_of_dictionary_for_policies())
 
         SoftAssert().verfy_equals_true("List of policies doesn't matched ",
-                                       self.api_sorted_policies_model_list, aplication_policies_list)
+                                       self.sorted_api_policies_types_dictionary, aplication_policies_list)
 
-        aplication_resources_list_with_status = deployment_page.create_list_of_dictionary_for_resources()
-
-        SoftAssert().verfy_equals_true("List of resources doesn't matched ",
-                                       self.api_resource_list_with_status, aplication_resources_list_with_status)
-
-        aplication_policies_dimensions_bar_list = deployment_page.create_list_of_policies_dimensions_bar()
-
-        SoftAssert().verfy_equals_true("List of dimension bar doesn't matched ",
-                                       self.api_policies_dimensions_bar_list, aplication_policies_dimensions_bar_list)
+        # aplication_resources_list_with_status = deployment_page.create_list_of_dictionary_for_resources()
+        #
+        # SoftAssert().verfy_equals_true("List of resources doesn't matched ",
+        #                                self.api_resources_dictionary, aplication_resources_list_with_status)
+        #
+        # aplication_policies_dimensions_bar_list = deployment_page.create_list_of_policies_dimensions_bar()
+        # print "aplication_policies_dimensions_bar_list: ", aplication_policies_dimensions_bar_list
+        #
+        # SoftAssert().verfy_equals_true("List of dimension bar doesn't matched ",
+        #                                self.api_policies_dimension_bar_dictionary_list,
+        #                                aplication_policies_dimensions_bar_list)
 
         self.assertEqual(SoftAssert().failures_size(), 0, str(SoftAssert().failures_list()))
 

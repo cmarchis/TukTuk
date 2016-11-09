@@ -3,54 +3,65 @@ import unittest
 from pages.MenuNavigationPage import MenuNavigationPage
 from pages.templates.TemplatesMenuListPage import TemplatesMenuListPage
 from pages.templates.details.TemplateDetailsPage import TemplateDetailsPage
+from pages.LoginPage import LoginPage
+from pages.LandingPage import LandingPage
 from tools.DriverUtils import DriverUtils
-from tools.ListUtils import ListUtils
 from tools.SoftAssert import SoftAssert
-from tools.api.mock.MockApiUtils import ApiUtils
+from tools.ConfigUtils import ConfigUtils
+from tools.api.mock.DataSetup import DataSetup
 
 
 class ViewTemplatesTest(unittest.TestCase):
     def setUp(self):
-        self.template_name = 'MySql Provision Template'
-        templates_list = ApiUtils().grab_templates_json()
-        self.template_names_list = ListUtils().grab_template_names(templates_list)
-        self.template_data = ListUtils().grab_template_data(self.template_name, templates_list)
+        self.base_url = ConfigUtils().read_config_file()['baseURL']
+        self.user_name = ConfigUtils().read_config_file()['userName']
+        self.user_pass = ConfigUtils().read_config_file()['userPass']
+        self.api_url = ConfigUtils().read_config_file()['apiBaseURL']
+
+        self.random_template_id = DataSetup().get_random_template_id()
+        self.random_deployment_id = DataSetup().grab_random_deployment_by_template_id(self.random_template_id)
+        self.template_dictionary_list = DataSetup().grab_template_dictionary_list()
+        self.template_resource_types_list = DataSetup().grab_template_resources_types_for_template_id(
+            self.random_deployment_id)
+        self.template_policies_list = DataSetup().grab_template_policies_for_template_id(
+            self.random_deployment_id)
+        self.template_deployments_list = DataSetup().grab_template_deployments_for_template_id(
+            self.random_deployment_id)
 
         self.browser = DriverUtils().start_driver()
 
     def test_ViewTemplatesTest(self):
         menu_navigation_page = MenuNavigationPage(self.browser)
-        menu_navigation_page.navigate_to("http://localhost:8014/provision")
-        menu_navigation_page.navigate_to("http://localhost:8014/provision")
+        menu_navigation_page.navigate_to(self.base_url)
+        menu_navigation_page.navigate_to(self.base_url)
+
+        login_page = LoginPage(self.browser)
+        login_page.perform_login(self.user_name, self.user_pass)
+
+        landing_page = LandingPage(self.browser)
+        landing_page.select_provision()
 
         template_menu = TemplatesMenuListPage(self.browser)
-        templates_list = template_menu.grab_names_list()
+        aplication_templates_dictionary_list = template_menu.grab_templates_dictionary_list()
 
-        print "Template List"
-        print self.template_names_list
-        print templates_list
-        SoftAssert().verify_all_elements_are_present(self.template_names_list, templates_list)
+        SoftAssert().verfy_equals_true(
+            "Templates dictionary lists doesn't matched ",
+            self.template_dictionary_list, aplication_templates_dictionary_list)
 
-        template_menu.click_on_template_item(self.template_name)
+        template_menu.click_on_template_by_id(self.random_template_id)
 
         template_details = TemplateDetailsPage(self.browser)
+        aplication_template_resource_types_list = template_details.grab_resource_types_list()
+        SoftAssert().verfy_equals_true("Resource Types lists doesn't matched ",
+                                       self.template_resource_types_list, aplication_template_resource_types_list)
 
-        print "Resources List"
-        print self.template_data['resourceTypes']
-        print template_details.grab_resources_data()
-        SoftAssert().verify_all_elements_are_present(self.template_data['resourceTypes'],
-                                                     template_details.grab_resources_data())
-        print "Policies List"
-        print self.template_data['attachedPolicies']
-        print template_details.grab_policies_data()
-        SoftAssert().verify_all_elements_are_present(self.template_data['attachedPolicies'],
-                                                     template_details.grab_policies_data())
+        aplication_template_policies_list = template_details.grab_policies_list()
+        SoftAssert().verfy_equals_true("Policies lists doesn't matched ",
+                                       self.template_policies_list, aplication_template_policies_list)
 
-        print "Deploy List"
-        print self.template_data['noOfDeployments']
-        print template_details.grab_deployments_data()
-        SoftAssert().verfy_equals_true("Number of deploys does not match", self.template_data['noOfDeployments'],
-                                       len(template_details.grab_deployments_data()))
+        aplication_template_deployments_list = template_details.grab_deployments_dictionary_list()
+        SoftAssert().verfy_equals_true("Policies lists doesn't matched ",
+                                       self.template_deployments_list, aplication_template_deployments_list)
 
         self.assertEqual(SoftAssert().failures_size(), 0, str(SoftAssert().failures_list()))
 

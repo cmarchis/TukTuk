@@ -5,13 +5,14 @@ from pages.deployments.DeploymentsMenuHeaderPage import DeploymentsMenuHeaderPag
 from pages.deployments.DeploymentsPage import DeploymentsPage
 from pages.templates.TemplatesMenuListPage import TemplatesMenuListPage
 from pages.templates.details.TemplateDetailsPage import TemplateDetailsPage
+from pages.LoginPage import LoginPage
+from pages.LandingPage import LandingPage
 from tools.DriverUtils import DriverUtils
-from tools.ListUtils import ListUtils
 from tools.SoftAssert import SoftAssert
-from tools.api.mock.MockApiUtils import ApiUtils
+from tools.ConfigUtils import ConfigUtils
+from tools.api.mock.DataSetup import DataSetup
 
 
-# random_deploymentName:  3 - Sample Deployment
 
 class IncludeComplianceActionsInDeploymentActionSectionTest(unittest.TestCase):
     """
@@ -24,30 +25,34 @@ class IncludeComplianceActionsInDeploymentActionSectionTest(unittest.TestCase):
     """
 
     def setUp(self):
-        self.expected_menu_option_list = ['Scan Compliance', 'Remediate', 'Change Template']
-        self.templtes_json = ApiUtils().grab_templates_json()
-        self.list_of_templates = ListUtils().grab_template_names_and_id(self.templtes_json)
-        random_template_list = ListUtils().return_random_from_list(self.list_of_templates)
-        self.random_templateID = random_template_list.get('templateID')
-        self.random_templateName = random_template_list.get('templateName')
+        self.base_url = ConfigUtils().read_config_file()['baseURL']
+        self.user_name = ConfigUtils().read_config_file()['userName']
+        self.user_pass = ConfigUtils().read_config_file()['userPass']
+        self.api_url = ConfigUtils().read_config_file()['apiBaseURL']
 
-        self.deployment_list = ListUtils().grab_deployment_name_and_id(self.random_templateID, self.templtes_json)
-        random_deployment_list = ListUtils().return_random_from_list(self.deployment_list)
-        self.random_deploymentName = random_deployment_list.get('deploymentName')
-        self.random_deploymentID = random_deployment_list.get('deploymentId')
-        self.api_deployment_info = ListUtils().grab_list_of_deployment_info(self.random_deploymentID,
-                                                                            self.templtes_json)
+        self.expected_menu_option_list = ['Scan Compliance', 'Remediate', 'Change Template']
+
+        self.random_template_id = DataSetup().get_random_template_id()
+        self.random_deployment_id = DataSetup().grab_random_deployment_by_template_id(self.random_template_id)
+        self.api_deployment_info = DataSetup().grab_deployment_info_from_templates(self.random_deployment_id)
         self.browser = DriverUtils().start_driver()
 
     def test_IncludeComplianceActionsInDeploymentActionSectionTest(self):
         menu_navigation_page = MenuNavigationPage(self.browser)
-        menu_navigation_page.navigate_to("http://localhost:8014/provision")
-        menu_navigation_page.navigate_to("http://localhost:8014/provision")
+        menu_navigation_page.navigate_to(self.base_url)
+        menu_navigation_page.navigate_to(self.base_url)
+
+        login_page = LoginPage(self.browser)
+        login_page.perform_login(self.user_name, self.user_pass)
+
+        landing_page = LandingPage(self.browser)
+        landing_page.select_provision()
+
         templates_menu_list_page = TemplatesMenuListPage(self.browser)
-        templates_menu_list_page.click_on_template_item(self.random_templateName)
+        templates_menu_list_page.click_on_template_by_id(self.random_template_id)
 
         template_details_page = TemplateDetailsPage(self.browser)
-        template_details_page.select_deployment(self.random_deploymentName)
+        template_details_page.select_deployment_by_id(self.random_deployment_id)
 
         deployment_page = DeploymentsPage(self.browser)
 

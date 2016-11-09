@@ -57,21 +57,7 @@ class ListUtils(object):
         """
         return random.choice(list)
 
-    def create_list_of_policies_model(self, deployment_id, policies_list, policies_type_list):
-        """
-        Create a minified list from the policies_list JSON
-        :return: list(item[type, number, variances],...)
-        """
-        return_list = []
-        for element in policies_type_list:
-            list_item = {}
-            list_item['type'] = element
-            list_item['number'] = str(self.grab_total_of_same_policy_type(deployment_id, element, policies_list))
-            list_item['variances'] = str(self.grab_variances(deployment_id, element, policies_list)) + " Variances"
-            return_list.append(list_item)
-        return return_list
-
-    def create_list_of_policies_bar_dimensions(self, deployment_id, policies_type_list, policies_list, dimension):
+    def create_list_of_policies_bar_dimensions(self, policies_type_list, dimension, deployment_json):
         """
         For every policy type that is in policies list create a list of policies bar dimension
         :param dimension: the entire dimension of the bar
@@ -86,84 +72,87 @@ class ListUtils(object):
         for element in policies_type_list:
             list_item = {}
             list_item['type'] = element
-            total = self.return_total_compliant_value(deployment_id, element, policies_list)
-            if self.grab_compliant_in_MSLO_of_same_policy_type(deployment_id, element, policies_list) != 0:
-                actual = self.grab_compliant_in_MSLO_of_same_policy_type(deployment_id, element, policies_list)
-                list_item['blue'] = self.value(self.percent(total, actual), dimension)
-            if self.grab_noncompliant_in_RSLO_of_same_policy_type(deployment_id, element, policies_list) != 0:
-                actual = self.grab_noncompliant_in_RSLO_of_same_policy_type(deployment_id, element, policies_list)
+            total = self.return_total_compliant_value(element, deployment_json)
+            print "element: ", element, ' total: ', total
+            if self.grab_compliant_in_MSLO_of_same_policy_type(element, deployment_json) != 0:
+                actual = self.grab_compliant_in_MSLO_of_same_policy_type(element, deployment_json) \
+                         + self.grab_exceptBeforeExp_of_same_policy_type(element, deployment_json)
+                list_item['green'] = self.value(self.percent(total, actual), dimension)
+            if self.grab_noncompliant_in_RSLO_of_same_policy_type(element, deployment_json) != 0:
+                actual = self.grab_noncompliant_in_RSLO_of_same_policy_type(element, deployment_json)
                 list_item['yellow'] = self.value(self.percent(total, actual), dimension)
-            if self.grab_noncompliant_out_RSLO_of_same_policy_type(deployment_id, element, policies_list) != 0:
-                actual = self.grab_noncompliant_out_RSLO_of_same_policy_type(deployment_id, element, policies_list)
+            if self.grab_noncompliant_out_RSLO_of_same_policy_type(element, deployment_json) != 0:
+                actual = self.grab_noncompliant_out_RSLO_of_same_policy_type(element, deployment_json)
                 list_item['red'] = self.value(self.percent(total, actual), dimension)
-            if self.grab_unknown_of_same_policy_type(deployment_id, element, policies_list) != 0:
-                actual = self.grab_unknown_of_same_policy_type(deployment_id, element, policies_list)
+            if self.grab_failed_of_same_policy_type(element, deployment_json) != 0:
+                actual = self.grab_failed_of_same_policy_type(element, deployment_json)
                 list_item['gray'] = self.value(self.percent(total, actual), dimension)
             return_list.append(list_item)
         return return_list
 
-    def grab_compliant_in_MSLO_of_same_policy_type(self, deployment_id, policy_type, policies_list):
+    def grab_compliant_in_MSLO_of_same_policy_type(self, policy_type, deployment_json):
         """
-        Return 'compliant in MSLO' value for every policy type from policies_list
+        Return 'compliant in MSLO' value for every policy type from deployment_json
         """
         sum = 0
-        for template_now in policies_list:
-            for details in template_now['deploymentDetails']:
-                if details['deployment']['deploymentId'] == deployment_id:
-                    for policies in details['deployment']['attachedPolicies']:
-                        if policies['policy']['policyType']['name'] == policy_type:
-                            sum += policies['policy']['complianceScore']['compliantInMSLO']
+
+        for policies in deployment_json['attachedPolicies']:
+            if policies['policy']['policyType']['name'] == policy_type:
+                sum += policies['policy']['complianceScore']['compliantInMSLO']
         return sum
 
-    def grab_noncompliant_in_RSLO_of_same_policy_type(self, deployment_id, policy_type, policies_list):
+    def grab_noncompliant_in_RSLO_of_same_policy_type(self, policy_type, deployment_json):
         """
         Return 'noncompliant in RSLO' value for every policy type from policies_list
         """
         sum = 0
-        for template_now in policies_list:
-            for details in template_now['deploymentDetails']:
-                if details['deployment']['deploymentId'] == deployment_id:
-                    for policies in details['deployment']['attachedPolicies']:
-                        if policies['policy']['policyType']['name'] == policy_type:
-                            sum += policies['policy']['complianceScore']['noncompliantInRSLO']
+
+        for policies in deployment_json['attachedPolicies']:
+            if policies['policy']['policyType']['name'] == policy_type:
+                sum += policies['policy']['complianceScore']['noncompliantInRSLO']
+
         return sum
 
-    def grab_noncompliant_out_RSLO_of_same_policy_type(self, deployment_id, policy_type, policies_list):
+    def grab_noncompliant_out_RSLO_of_same_policy_type(self, policy_type, deployment_json):
         """
          Return 'noncompliant out RSLO' value for every policy type from policies_list
         """
         sum = 0
-        for template_now in policies_list:
-            for details in template_now['deploymentDetails']:
-                if details['deployment']['deploymentId'] == deployment_id:
-                    for policies in details['deployment']['attachedPolicies']:
-                        if policies['policy']['policyType']['name'] == policy_type:
-                            sum += policies['policy']['complianceScore']['noncompliantOutRSLO']
+        for policies in deployment_json['attachedPolicies']:
+            if policies['policy']['policyType']['name'] == policy_type:
+                sum += policies['policy']['complianceScore']['noncompliantOutRSLO']
         return sum
 
-    def grab_unknown_of_same_policy_type(self, deployment_id, policy_type, policies_list):
+    def grab_failed_of_same_policy_type(self, policy_type, deployment_json):
         """
         Return 'unknown' value for every policy type from policies_list
         """
         sum = 0
-        for template_now in policies_list:
-            for details in template_now['deploymentDetails']:
-                if details['deployment']['deploymentId'] == deployment_id:
-                    for policies in details['deployment']['attachedPolicies']:
-                        if policies['policy']['policyType']['name'] == policy_type:
-                            sum += policies['policy']['complianceScore']['unknown']
+        for policies in deployment_json['attachedPolicies']:
+            if policies['policy']['policyType']['name'] == policy_type:
+                sum += policies['policy']['complianceScore']['failed']
         return sum
 
-    def return_total_compliant_value(self, deployment_id, policy_type, policies_list):
+    def grab_exceptBeforeExp_of_same_policy_type(self, policy_type, deployment_json):
+        """
+        Return 'unknown' value for every policy type from policies_list
+        """
+        sum = 0
+        for policies in deployment_json['attachedPolicies']:
+            if policies['policy']['policyType']['name'] == policy_type:
+                sum += policies['policy']['complianceScore']['exceptBeforeExp']
+        return sum
+
+    def return_total_compliant_value(self, policy_type, policies_list):
         """
         Return total compliant value for every policy type in policies_list
         """
-        sum = self.grab_compliant_in_MSLO_of_same_policy_type(deployment_id, policy_type,
-                                                              policies_list) + self.grab_noncompliant_in_RSLO_of_same_policy_type(
-            deployment_id, policy_type, policies_list) + self.grab_noncompliant_out_RSLO_of_same_policy_type(
-            deployment_id, policy_type,
-            policies_list) + self.grab_unknown_of_same_policy_type(
-            deployment_id, policy_type, policies_list)
+        sum = self.grab_compliant_in_MSLO_of_same_policy_type(policy_type, policies_list) \
+              + self.grab_noncompliant_in_RSLO_of_same_policy_type(policy_type, policies_list) \
+              + self.grab_noncompliant_out_RSLO_of_same_policy_type(policy_type, policies_list) \
+              + self.grab_failed_of_same_policy_type(policy_type, policies_list) \
+              + self.grab_exceptBeforeExp_of_same_policy_type(policy_type, policies_list)
+
         return sum
 
     def percent(self, total, actual):
@@ -188,35 +177,37 @@ class ListUtils(object):
         val = val2 + 1
         return val
 
-    def grab_variances(self, deployment_id, policy_type, policies_list):
+    def grab_list_of_dictionary_of_policies_types_for_deployment_id(self, deployment_json):
         """
-        From the policies list, return the total tests (from complianceScore) for policies with the same type
-        """
-        sum = 0
-        for template_now in policies_list:
-            for details in template_now['deploymentDetails']:
-                if details['deployment']['deploymentId'] == deployment_id:
-                    for policies in details['deployment']['attachedPolicies']:
-                        if policies['policy']['policyType']['name'] == policy_type:
-                            sum += policies['policy']['complianceScore']['noncompliantInRSLO'] + \
-                                   policies['policy']['complianceScore'][
-                                       'noncompliantOutRSLO']
-        return sum
-
-    def grab_list_of_policies_types(self, deployment_id, templtes_list):
-        """
-        From policies list, return the list of policy type names
+        From deployment json, return the list of policy type names
         :return: list(policy_name,...)
         """
-        list = []
-        for template_now in templtes_list:
-            for details in template_now['deploymentDetails']:
-                if details['deployment']['deploymentId'] == deployment_id:
-                    for policies in details['deployment']['attachedPolicies']:
-                        list.append(policies['policy']['policyType']['name'])
-                    break
+        policy_type_list = []
+        policy_type_name_list = []
 
-        return list
+        for policy_now in deployment_json['attachedPolicies']:
+            for store_policy in policy_type_list:
+                policy_type_name_list.append(store_policy['type'])
+            policy_type = {}
+            if policy_now['policy']['policyType']['name'] not in policy_type_name_list:
+                policy_type['type'] = policy_now['policy']['policyType']['name']
+                policy_type['number'] = 1
+                policy_type['variances'] = policy_now['policy']['complianceScore']['noncompliantInRSLO'] + \
+                                           policy_now['policy']['complianceScore']['noncompliantOutRSLO']
+                policy_type_list.append(policy_type)
+            if policy_now['policy']['policyType']['name'] in policy_type_name_list:
+                for policy in policy_type_list:
+                    if policy_now['policy']['policyType']['name'] == policy['type']:
+                        policy['number'] += 1
+                        policy['variances'] += policy_now['policy']['complianceScore']['noncompliantInRSLO'] + \
+                                               policy_now['policy']['complianceScore']['noncompliantOutRSLO']
+        return policy_type_list
+
+    def add_variances_termination_to_policies_type_dictionary_list(self, policy_type_list):
+        for policy in policy_type_list:
+            policy['variances'] = str(policy['variances']) + ' Variances'
+        return policy_type_list
+
 
     def grab_total_of_same_policy_type(self, deployment_id, policy_type, templtes_list):
         """
@@ -245,29 +236,26 @@ class ListUtils(object):
 
         return sum
 
-    def grab_list_of_resources_with_status(self, deployment_id, templtes_list):
+    def grab_list_dictionary_of_resources_for_deployment_id(self, deployment_json):
         """
         From list of policies, returns a list of resource name into correct compliance category
         :return list(item[name, status],...):
         """
         return_list = []
-        for template_now in templtes_list:
-            for details in template_now['deploymentDetails']:
-                if details['deployment']['deploymentId'] == deployment_id:
-                    for resources in details['deployment']['resources']:
-                        list_item = {}
-                        list_item['name'] = resources['resourceName']
-                        if resources['complianceScore']['unknown'] != 0:
-                            list_item['status'] = "Unknown"
-                        elif resources['complianceScore']['noncompliantOutRSLO'] != 0:
-                            list_item['status'] = "Non Compliant"
-                        elif resources['complianceScore']['noncompliantInRSLO'] != 0:
-                            list_item['status'] = "Warning"
-                        elif resources['complianceScore']['compliantInMSLO'] != 0:
-                            list_item['status'] = "Compliant"
+        for resources in deployment_json['resources']:
+            list_item = {}
+            list_item['name'] = resources['resourceName']
+            if resources['complianceScore']['unknown'] != 0:
+                list_item['status'] = "Unknown"
+            elif resources['complianceScore']['noncompliantOutRSLO'] != 0:
+                list_item['status'] = "Non Compliant"
+            elif resources['complianceScore']['noncompliantInRSLO'] != 0:
+                list_item['status'] = "Warning"
+            elif resources['complianceScore']['compliantInMSLO'] != 0:
+                list_item['status'] = "Compliant"
 
-                        return_list.append(list_item)
-                    return return_list
+            return_list.append(list_item)
+        return return_list
 
     def grab_template_names_and_id(self, templtes_list):
         """
@@ -318,32 +306,31 @@ class ListUtils(object):
         list_item = {}
         for template_now in templtes_list:
             for details in template_now['deploymentDetails']:
-                if details['deployment']['deploymentId'] == deployment_id:
-                    list_item['status'] = details['deployment']['status']
-                    list_item['template'] = details['deployment']['templateName']
+                if details['deploymentId'] == deployment_id:
+                    list_item['status'] = details['status']
+                    list_item['template'] = details['templateName']
                     list_item['last_scanned'] = DateUtils().convert_long_to_aplication_format_date(
-                        details['deployment']['complianceScore']['lastScanDate'])
+                        details['complianceScore']['lastScanDate'])
                     list_item['compliant'] = str(
-                        details['deployment']['complianceScore']['compliantPolicies']) + ' of ' + \
-                                             str(details['deployment']['complianceScore'][
-                                                     'totalPolicies']) + ' Compliant'
+                        details['complianceScore']['compliantPolicies']) + ' of ' + \
+                                             str(details['complianceScore']['totalPolicies']) + ' Compliant'
         return list_item
 
-    def grab_deployment_name_and_id(self, deployments_json):
-        """
-        From json grabbed from api, return a list of deployments name for a given template
-        :param template_name:
-        :param templtes_list:
-        :return:
-        """
-        deployment_list = []
-        for resource_now in deployments_json:
-            list_item = {}
-            list_item['deploymentName'] = resource_now['deploymentName']
-            list_item['deploymentId'] = resource_now['deploymentId']
-            deployment_list.append(list_item)
-
-        return deployment_list
+    # def grab_deployment_name_and_id(self, deployments_json):
+    #     """
+    #     From json grabbed from api, return a list of deployments name for a given template
+    #     :param template_name:
+    #     :param templtes_list:
+    #     :return:
+    #     """
+    #     deployment_list = []
+    #     for resource_now in deployments_json:
+    #         list_item = {}
+    #         list_item['deploymentName'] = resource_now['deploymentName']
+    #         list_item['deploymentId'] = resource_now['deploymentId']
+    #         deployment_list.append(list_item)
+    #
+    #     return deployment_list
 
     def get_last_remediate_scan_date(self, jobs_json):
         """
@@ -358,30 +345,28 @@ class ListUtils(object):
                 list_remediate.append(job['startDT'])
             if job['type'] == "SCAN":
                 list_scan.append(job['startDT'])
-        print "list_remediate ", list_remediate
-        print "list_scan ", list_scan
         if len(list_remediate) != 0:
             return DateUtils().convert_long_to_aplication_format_date(min(list_remediate))
         else:
             return DateUtils().convert_long_to_aplication_format_date(min(list_scan))
 
-    def grab_resources_from_deployment(self, deployment_id, templtes_list):
-        """
-        Create a list of dictionary for resources of a given deployment id
-        :param deployment_id:
-        :param templtes_list:
-        :return:
-        """
-        resource_list = []
-        for template_now in templtes_list:
-            for details in template_now['deploymentDetails']:
-                if details['deployment']['deploymentId'] == deployment_id:
-                    for resource in details['deployment']['resources']:
-                        list_item = {}
-                        list_item['resourceName'] = resource['resourceName']
-                        list_item['resourceId'] = resource['resourceId']
-                        resource_list.append(list_item)
-        return resource_list
+    # def grab_resources_from_deployment(self, deployment_id, templtes_list):
+    #     """
+    #     Create a list of dictionary for resources of a given deployment id
+    #     :param deployment_id:
+    #     :param templtes_list:
+    #     :return:
+    #     """
+    #     resource_list = []
+    #     for template_now in templtes_list:
+    #         for details in template_now['deploymentDetails']:
+    #             if details['deployment']['deploymentId'] == deployment_id:
+    #                 for resource in details['deployment']['resources']:
+    #                     list_item = {}
+    #                     list_item['resourceName'] = resource['resourceName']
+    #                     list_item['resourceId'] = resource['resourceId']
+    #                     resource_list.append(list_item)
+    #     return resource_list
 
     def grab_resources_from_deployment_mock(self, specific_deployment_json):
         """
@@ -534,6 +519,53 @@ class ListUtils(object):
         elif self.found != True:
             date = 'Older'
         return date
+
+    def grab_template_dictionary_list(self, template_json):
+        template_list = []
+        for template_now in template_json:
+            template = {}
+            template['name'] = template_now['templateName']
+            template['deployments'] = str(template_now['noOfDeployments']) + ' Deployments'
+            template_list.append(template)
+        return template_list
+
+    def grab_template_resources_types_for_template_id(self, template_id, template_json):
+        resources_types = []
+        for template_now in template_json:
+            if template_now['templateID'] == template_id:
+                i = 0
+                for resource_type_now in template_now['resourceTypes']:
+                    i += 1
+                    resources_types.append(str(i) + '.   ' + resource_type_now['resourceName'])
+        return resources_types
+
+    def grab_template_policies_for_template_id(self, template_id, template_json):
+        policies = []
+        for template_now in template_json:
+            if template_now['templateID'] == template_id:
+                for policy_now in template_now['attachedPolicies']:
+                    policies.append(policy_now['name'])
+        return policies
+
+    def grab_template_deployments_for_template_id(self, template_id, template_json):
+        deployments_list = []
+        for template_now in template_json:
+            if template_now['templateID'] == template_id:
+                deployment = {}
+                for deployments_now in template_now['deploymentDetails']:
+                    deployment['name'] = deployments_now['deploymentName']
+                    if deployments_now['status'] == 'RUNNING':
+                        deployment['status'] = 'In Progress'
+                    else:
+                        deployment['status'] = deployments_now['status'].title()
+                    deployments_list.append(deployment)
+        return deployments_list
+
+    def create_policy_list_from_policy_dictionary_list(self, policy_dictionary_list):
+        policy_list = []
+        for policy in policy_dictionary_list:
+            policy_list.append(policy['type'])
+        return policy_list
 
 
 if __name__ == "__main__":

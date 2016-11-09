@@ -145,3 +145,15 @@ class RealApiUtils(object):
         headers = {
             'X-Auth-Token': token}
         return requests.get('http://192.168.155.238:8080/urest/v1' + '/template', headers=headers).json()
+
+    def create_new_scan_job_for_deployment(self, api_url, deployment_id):
+        headers = {
+            'X-Auth-Token': self.request_token(), 'Content-Type': 'application/json'
+        }
+        r = requests.post(api_url + '/deployment/' + deployment_id + '/scan_compliance', headers=headers, verify=False)
+        return r.status_code
+
+
+if __name__ == "__main__":
+    print RealApiUtils().create_new_scan_job_for_deployment('https://192.168.155.238:8081/urest/v1',
+                                                            'd10c819a38ccb5f7f3f4')

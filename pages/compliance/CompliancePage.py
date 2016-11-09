@@ -76,7 +76,7 @@ class CompliancePage(WebdriverBase):
         filter_button_open = self.locate_element_by_css_selector(SORT_ICON_SELECTOR)
         filter_button_open.click()
 
-    def scroll_until_all_policies_types_are_visible(self, api_list_compliance):
+    def scroll_until_all_compliance_are_visible(self, number_of_compliance_from_api):
         """
         Scroll until the length of policies types list grabbed from application is the same as the length of list of
          policies types grabbed from API and if this condition isn't reached will scroll until the number of scroll
@@ -88,9 +88,14 @@ class CompliancePage(WebdriverBase):
         """
         i = 0
         while len(
-                self.create_list_of_dictionary_for_compliance()) != api_list_compliance and i < 5:
+                self.create_list_of_dictionary_for_compliance()) != number_of_compliance_from_api and i < 50:
             self.scroll_pg_down()
+            time.sleep(3)
             i += 1
+            print "ui: ",len(self.create_list_of_dictionary_for_compliance()),' vs :', number_of_compliance_from_api
+
+    def scroll_to_home(self):
+        self.scroll_to_home()
 
     def click_compliance_by_id(self, compliance_id):
         compliance_container = self.locate_elements_by_css_selector(POLICY_CONTAINER_SELECTOR)

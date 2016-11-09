@@ -111,9 +111,62 @@ class DataSetup(object):
             jobs_json = MockApiUtils().grab_job_json(self.api_url, deployment_id)
         return ListUtils().get_last_remediate_scan_date(jobs_json)
 
+    def create_new_scan_job(self, deployment_id):
+        if self.api_type == 'real':
+            RealApiUtils().create_new_scan_job_for_deployment(self.api_url, deployment_id)
+        elif self.api_type == 'mock':
+            MockApiUtils().create_new_scan_job_for_deployment(self.api_url, deployment_id)
+
+    def grab_deployment_info_from_templates(self, deployment_id):
+        template_json = self.grab_template_data()
+        return ListUtils().grab_list_of_deployment_info(deployment_id, template_json)
+
+    def grab_template_dictionary_list(self):
+        template_json = self.grab_template_data()
+        return ListUtils().grab_template_dictionary_list(template_json)
+
+    def grab_template_resources_types_for_template_id(self, template_id):
+        template_json = self.grab_template_data()
+        return ListUtils().grab_template_resources_types_for_template_id(template_id, template_json)
+
+    def grab_template_policies_for_template_id(self, template_id):
+        template_json = self.grab_template_data()
+        return ListUtils().grab_template_policies_for_template_id(template_id, template_json)
+
+    def grab_template_deployments_for_template_id(self, template_id):
+        template_json = self.grab_template_data()
+        return ListUtils().grab_template_deployments_for_template_id(template_id, template_json)
+
+    def grab_deployment_json(self, deployment_id):
+        deployment_json = ''
+        if self.api_type == 'real':
+            deployment_json = RealApiUtils().grab_deployments_json(self.api_url, deployment_id)
+        elif self.api_type == 'mock':
+            deployment_json = MockApiUtils().grab_deployments_json(self.api_url, deployment_id)
+        return deployment_json
+
+    def grab_policies_types_dictionary_list_for_deployment_id(self, deployment_id):
+        deployment_json = self.grab_deployment_json(deployment_id)
+        policies_types = ListUtils().grab_list_of_dictionary_of_policies_types_for_deployment_id(deployment_json)
+        return ListUtils().add_variances_termination_to_policies_type_dictionary_list(policies_types)
+
+    def grab_list_dictionary_of_resources_for_deployment_id(self, deployment_id):
+        deployment_json = self.grab_deployment_json(deployment_id)
+        return ListUtils().grab_list_dictionary_of_resources_for_deployment_id(deployment_json)
+
+    def grab_list_of_policies_bar_dimensions(self, deployment_id, dimension):
+        deployment_json = self.grab_deployment_json(deployment_id)
+        policies_list = self.grab_policies_types_dictionary_list_for_deployment_id(deployment_id)
+        policy_list = ListUtils().create_policy_list_from_policy_dictionary_list(policies_list)
+        return ListUtils().create_list_of_policies_bar_dimensions(policy_list, dimension, deployment_json)
+
 
 if __name__ == "__main__":
-    print DataSetup().get_random_template_id()
+    # print DataSetup().get_random_template_id()
+    #
+    # print DataSetup().grab_random_deployment_by_template_id('2468')
+    # print "aaa", DataSetup().grab_random_resource_id_by_deployment_id('2468')
 
-    print DataSetup().grab_random_deployment_by_template_id('2468')
-    print "aaa", DataSetup().grab_random_resource_id_by_deployment_id('2468')
+    # print 'grab_list_of_policies_bar_dimensions ', DataSetup().grab_list_of_policies_bar_dimensions('1234',192)
+    abc = DataSetup().grab_policies_types_dictionary_list_for_deployment_id('1234')
+    print "aaa: ", ListUtils().add_variances_termination_to_policies_type_dictionary_list(abc)
