@@ -74,6 +74,14 @@ class DataSetup(object):
             compliance_json = MockApiUtils().grab_compliance_json_for_resource_id(self.api_url, resource_id)
         return compliance_json
 
+    def grab_compliance_json(self):
+        compliance_json = ''
+        if self.api_type == 'real':
+            compliance_json = RealApiUtils().grab_compliance_json(self.api_url)
+        elif self.api_type == 'mock':
+            compliance_json = MockApiUtils().grab_compliance_json(self.api_url)
+        return compliance_json
+
     def grab_random_compliance_id_by_resource_id(self, resource_id):
         compliance_json = self.grab_compliance_json_for_resource_id(resource_id)
         compliance_list = ListUtils().grab_compliance_name_and_id(compliance_json)
@@ -93,13 +101,29 @@ class DataSetup(object):
         compliance_list = ListUtils().grab_compliance_resources(compliance_json)
         return compliance_list
 
+    def grab_all_compliance_list(self):
+        compliance_json = self.grab_compliance_json()
+        compliance_list = ListUtils().grab_compliance_resources(compliance_json)
+        return compliance_list
+
     def grab_compliance_list_by_resource_of_given_status(self, resource_id, key):
         compliance_list = self.grab_compliance_list_by_resource(resource_id)
         list_of_given_status = ListUtils().create_compliance_list(key, compliance_list)
         return list_of_given_status
 
+    def grab_compliance_list_of_given_status(self, key):
+        compliance_list = self.grab_all_compliance_list()
+        list_of_given_status = ListUtils().create_compliance_list(key, compliance_list)
+        return list_of_given_status
+
     def grab_compliance_list_by_resources_sorted_by_key(self, sort_option, resource_id):
         compliance_json = self.grab_compliance_json_for_resource_id(resource_id)
+        compliance_list = ListUtils().grab_compliance_resources_key_sorted_by_key(sort_option, compliance_json)
+        return compliance_list
+
+    def grab_compliance_list_sorted_by_key(self, sort_option):
+        compliance_json = self.grab_compliance_json()
+        print "compliance_json: ",compliance_json
         compliance_list = ListUtils().grab_compliance_resources_key_sorted_by_key(sort_option, compliance_json)
         return compliance_list
 
@@ -148,7 +172,9 @@ class DataSetup(object):
     def grab_policies_types_dictionary_list_for_deployment_id(self, deployment_id):
         deployment_json = self.grab_deployment_json(deployment_id)
         policies_types = ListUtils().grab_list_of_dictionary_of_policies_types_for_deployment_id(deployment_json)
-        return ListUtils().add_variances_termination_to_policies_type_dictionary_list(policies_types)
+        policies_list = ListUtils().convert_policies_type_dictionary_list_in_string_elements(policies_types)
+        sorted_policies_list = ListUtils().sort_list_alphabetically_by('type', policies_list)
+        return sorted_policies_list
 
     def grab_list_dictionary_of_resources_for_deployment_id(self, deployment_id):
         deployment_json = self.grab_deployment_json(deployment_id)
@@ -168,9 +194,27 @@ class DataSetup(object):
             credential_json = MockApiUtils().grab_credential_json(self.api_url)
         return credential_json
 
-    def grab_list_of_credential(self):
+    def grab_credential_data_list(self):
         credntial_json = self.grab_credebtial_json()
-        return ListUtils().grab_credential_name_list(credntial_json)
+        return ListUtils().grab_credential_data_list(credntial_json)
+
+    def grab_random_credential_id(self):
+        credntial_json = self.grab_credebtial_json()
+        credential_list = ListUtils().grab_credential_data_list(credntial_json)
+        random_credential_id = ListUtils().return_random_from_list(credential_list)
+        return random_credential_id.get('id')
+
+    def grab_credential_data_by_id(self, credential_id):
+        credntial_json = self.grab_credebtial_json()
+        credential_list = ListUtils().grab_credential_list_by_id(credntial_json, credential_id)
+        credential_dictionary_list_by_id = ListUtils().grab_credential_data_from_credential_list(credential_list)
+        return credential_dictionary_list_by_id
+
+    def grab_credential_data_by_name(self, credential_name):
+        credntial_json = self.grab_credebtial_json()
+        credential_list = ListUtils().grab_credential_list_by_name(credntial_json, credential_name)
+        credential_dictionary_list_by_name = ListUtils().grab_credential_data_from_credential_list(credential_list)
+        return credential_dictionary_list_by_name
 
 
 if __name__ == "__main__":
@@ -180,5 +224,5 @@ if __name__ == "__main__":
     # print "aaa", DataSetup().grab_random_resource_id_by_deployment_id('2468')
 
     # print 'grab_list_of_policies_bar_dimensions ', DataSetup().grab_list_of_policies_bar_dimensions('1234',192)
-    abc = DataSetup().grab_policies_types_dictionary_list_for_deployment_id('1234')
-    print "aaa: ", ListUtils().add_variances_termination_to_policies_type_dictionary_list(abc)
+    abc = DataSetup().grab_credential_data_list()
+    print "aaa: ", abc

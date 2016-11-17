@@ -15,19 +15,32 @@ from tools.api.mock.DataSetup import DataSetup
 
 
 class ViewRuleDetailsTest(unittest.TestCase):
+    """
+    Test contains 1 verification steps:
+    In the setUp phase is grabbed:
+       - a random template
+       - a random deployment id from random template
+       - a random resource id from random deployment
+       - a random compliance id from resource
+       - compliance details for random compliance
+       - total number of compliance for random resource
+    Test: - is navigating to the chosen template, deployment, resource and compliance for resource.
+            - is scrolling till all the compliance are visible
+            - is clicking on the random compliance grabbed in setUp phase
+            - is grabbing the details of compliance displayed
+            - is VALIDATING that the details grabbed from api matches with the details grabbed from application
+    """
+
     def setUp(self):
         self.base_url = ConfigUtils().read_config_file()['baseURL']
         self.user_name = ConfigUtils().read_config_file()['userName']
         self.user_pass = ConfigUtils().read_config_file()['userPass']
         self.api_url = ConfigUtils().read_config_file()['apiBaseURL']
 
-        # self.random_template_id = DataSetup().get_random_template_id()
-        self.random_template_id = '7b4ca205-7b75-459c-81f1-a61fc8b6be69'
+        self.random_template_id = DataSetup().get_random_template_id()
         self.random_deployment_id = DataSetup().grab_random_deployment_by_template_id(self.random_template_id)
         self.random_resource_id = DataSetup().grab_random_resource_id_by_deployment_id(self.random_deployment_id)
-        print " self.random_resource_id: ", self.random_resource_id
         self.random_compliance_id = DataSetup().grab_random_compliance_id_by_resource_id(self.random_resource_id)
-        print 'self.random_compliance_id: ', self.random_compliance_id
         self.compliance_details = DataSetup().grab_compliance_details(self.random_resource_id,
                                                                       self.random_compliance_id)
 

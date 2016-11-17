@@ -93,6 +93,18 @@ class RealApiUtils(object):
         json_object = json.load(response)
         return json_object
 
+    def grab_compliance_json(self, api_url):
+        """
+        Return the json grabbed from api
+        :return:
+        """
+        headers = {'X-Auth-Token': self.request_token()}
+        request = urllib2.Request(
+            api_url + '/compliance/compliance_detail', headers=headers)
+        response = urllib2.urlopen(request)
+        json_object = json.load(response)
+        return json_object
+
     def grab_credential_json(self, api_url):
         headers = {'X-Auth-Token': self.request_token()}
         request = urllib2.Request(

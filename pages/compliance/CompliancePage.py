@@ -88,11 +88,11 @@ class CompliancePage(WebdriverBase):
         """
         i = 0
         while len(
-                self.create_list_of_dictionary_for_compliance()) != number_of_compliance_from_api and i < 50:
+                self.create_list_of_dictionary_for_compliance()) != number_of_compliance_from_api and i < 20:
             self.scroll_pg_down()
             time.sleep(3)
             i += 1
-            print "ui: ",len(self.create_list_of_dictionary_for_compliance()),' vs :', number_of_compliance_from_api
+            # print "ui: ",len(self.create_list_of_dictionary_for_compliance()),' vs :', number_of_compliance_from_api
 
     def scroll_to_home(self):
         self.scroll_to_home()

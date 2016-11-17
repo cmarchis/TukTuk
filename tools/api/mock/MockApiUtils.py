@@ -28,15 +28,6 @@ class MockApiUtils(object):
             templates_list.append(item_now)
         return templates_list
 
-    def grab_template_by_template_id(self, template_id):
-        request = urllib2.Request(api_url + templates_url)
-        response = urllib2.urlopen(request)
-        json_object = json.load(response)
-        templates_list = []
-        for item_now in json_object['members']:
-            templates_list.append(item_now)
-        return templates_list
-
     def grab_deployments_from_templates_json(self, api_url, template_id):
         """
         Return a json containing all deployments from live api
@@ -95,7 +86,6 @@ class MockApiUtils(object):
         json_object = json.load(response)
         return json_object
 
-
     def grab_compliance_json_for_resource_id(self, api_url, resource_id):
         """
         Return the json grabbed from api
@@ -107,8 +97,19 @@ class MockApiUtils(object):
         json_object = json.load(response)
         return json_object
 
+    def grab_compliance_json(self, api_url):
+        """
+        Return the json grabbed from api
+        :return:
+        """
+        request = urllib2.Request(
+            api_url + '/compliance/compliance_detail')
+        response = urllib2.urlopen(request)
+        json_object = json.load(response)
+        return json_object
+
     def create_new_scan_job_for_deployment(self, api_url, deployment_id):
-        r = requests.post(api_url+'/deployment/'+deployment_id+'/scan_compliance')
+        r = requests.post(api_url + '/deployment/' + deployment_id + '/scan_compliance')
         return r.status_code
 
     def grab_credential_json(self, api_url, ):
@@ -129,4 +130,5 @@ if __name__ == "__main__":
     # print 'grab_deployments_json', MockApiUtils().grab_deployments_json('http://localhost:8010/urest/v1',
     #                                                                     '1234')
 
-    print 'create_new_scan_job_for_deployment: ',MockApiUtils().create_new_scan_job_for_deployment('http://localhost:8010/urest/v1','1234')
+    print 'create_new_scan_job_for_deployment: ', MockApiUtils().create_new_scan_job_for_deployment(
+        'http://localhost:8010/urest/v1', '1234')

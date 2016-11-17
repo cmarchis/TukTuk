@@ -78,7 +78,7 @@ class DeploymentsPage(WebdriverBase):
                 class_atribute = path.get_attribute("class")
                 if "accent" in class_atribute:
                     value = path.get_attribute("d")
-                    list_item['blue'] = self.return_bar_dimension(value)
+                    list_item['green'] = self.return_bar_dimension(value)
                 if "warning" in class_atribute:
                     value = path.get_attribute("d")
                     list_item['yellow'] = self.return_bar_dimension(value)

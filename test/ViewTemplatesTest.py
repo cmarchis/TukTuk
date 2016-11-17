@@ -12,6 +12,38 @@ from tools.api.mock.DataSetup import DataSetup
 
 
 class ViewTemplatesTest(unittest.TestCase):
+    """
+    Test contain 4 verification steps:
+    - is VALIDATING that the list of template grabbed from api matches with the list of templates grabbed from
+        applications
+    - is VALIDATING that the list of resources grabbed from api matches with the list of resources grabbed from
+        application
+    - is VALIDATING that the list of policies grabbed from api matches with the list of resources grabbed from
+        applications
+    - is VALIDATING that the list of deployments grabbed from api matches with the list of deployments grabbed from
+        applications
+
+    In te setUp phase is grabbed:
+        - a random template
+        - a random deployment id from random template
+        - template list, template resource list, template policies list, template deployments list
+    Test:
+        - is navigating to template page
+        - is grabbing the list of displayed template
+        - is VALIDATING that the list of template grabbed from api matches with the list of templates grabbed from
+        applications
+        - is clicking on the random template
+        - is grabbing the list of resources from template page
+        - is VALIDATING that the list of resources grabbed from api matches with the list of resources grabbed from
+        application
+        - is grabbing the list of policies from template page
+        - is VALIDATING that the list of policies grabbed from api matches with the list of resources grabbed from
+        applications
+        - is grabbing the list of deployments from template page
+        - is VALIDATING that the list of deployments grabbed from api matches with the list of deployments grabbed from
+        applications
+    """
+
     def setUp(self):
         self.base_url = ConfigUtils().read_config_file()['baseURL']
         self.user_name = ConfigUtils().read_config_file()['userName']
@@ -60,7 +92,7 @@ class ViewTemplatesTest(unittest.TestCase):
                                        self.template_policies_list, aplication_template_policies_list)
 
         aplication_template_deployments_list = template_details.grab_deployments_dictionary_list()
-        SoftAssert().verfy_equals_true("Policies lists doesn't matched ",
+        SoftAssert().verfy_equals_true("Deployments lists doesn't matched ",
                                        self.template_deployments_list, aplication_template_deployments_list)
 
         self.assertEqual(SoftAssert().failures_size(), 0, str(SoftAssert().failures_list()))

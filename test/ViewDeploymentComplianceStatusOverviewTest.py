@@ -32,16 +32,12 @@ class ViewDeploymentComplianceStatusOverviewTest(unittest.TestCase):
         self.user_pass = ConfigUtils().read_config_file()['userPass']
         self.api_url = ConfigUtils().read_config_file()['apiBaseURL']
 
-        self.random_template_id = '1234'
-        self.random_deployment_id = '1234'
-        # self.random_template_id = DataSetup().get_random_template_id()
-        # self.random_deployment_id = DataSetup().grab_random_deployment_by_template_id(self.random_template_id)
+        self.random_template_id = DataSetup().get_random_template_id()
+        self.random_deployment_id = DataSetup().grab_random_deployment_by_template_id(self.random_template_id)
         self.random_resource_id = DataSetup().grab_random_resource_id_by_deployment_id(self.random_deployment_id)
 
-        api_policies_types_dictionary = DataSetup().grab_policies_types_dictionary_list_for_deployment_id(
+        self.sorted_api_policies_types_dictionary = DataSetup().grab_policies_types_dictionary_list_for_deployment_id(
             self.random_deployment_id)
-        self.sorted_api_policies_types_dictionary = ListUtils().sort_list_alphabetically_by('type',
-                                                                                            api_policies_types_dictionary)
         self.api_resources_dictionary = DataSetup().grab_list_dictionary_of_resources_for_deployment_id(
             self.random_deployment_id)
 
@@ -77,17 +73,17 @@ class ViewDeploymentComplianceStatusOverviewTest(unittest.TestCase):
         SoftAssert().verfy_equals_true("List of policies doesn't matched ",
                                        self.sorted_api_policies_types_dictionary, aplication_policies_list)
 
-        # aplication_resources_list_with_status = deployment_page.create_list_of_dictionary_for_resources()
-        #
-        # SoftAssert().verfy_equals_true("List of resources doesn't matched ",
-        #                                self.api_resources_dictionary, aplication_resources_list_with_status)
-        #
-        # aplication_policies_dimensions_bar_list = deployment_page.create_list_of_policies_dimensions_bar()
-        # print "aplication_policies_dimensions_bar_list: ", aplication_policies_dimensions_bar_list
-        #
-        # SoftAssert().verfy_equals_true("List of dimension bar doesn't matched ",
-        #                                self.api_policies_dimension_bar_dictionary_list,
-        #                                aplication_policies_dimensions_bar_list)
+        aplication_resources_list_with_status = deployment_page.create_list_of_dictionary_for_resources()
+
+        SoftAssert().verfy_equals_true("List of resources doesn't matched ",
+                                       self.api_resources_dictionary, aplication_resources_list_with_status)
+
+        aplication_policies_dimensions_bar_list = deployment_page.create_list_of_policies_dimensions_bar()
+        print "aplication_policies_dimensions_bar_list: ", aplication_policies_dimensions_bar_list
+
+        SoftAssert().verfy_equals_true("List of dimension bar doesn't matched ",
+                                       self.api_policies_dimension_bar_dictionary_list,
+                                       aplication_policies_dimensions_bar_list)
 
         self.assertEqual(SoftAssert().failures_size(), 0, str(SoftAssert().failures_list()))
 

@@ -20,6 +20,9 @@ class WebdriverBase(object):
         """
         self.driver.get(url)
 
+    def execute_js(self, script, element):
+        self.driver.execute_script(script, element)
+
     def locate_element_by_css_selector(self, css_locator):
         """
         Finds a web element based on a provided css locator.

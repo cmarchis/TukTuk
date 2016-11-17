@@ -36,19 +36,6 @@ class ListUtils(object):
         new_list = natsort.natsorted(list, key=itemgetter(*['key']), reverse=True)
         return new_list
 
-    def remove_duplicates_from_list(self, list):
-        """
-        Remove duplicated value from a list.
-        :return: list with unique values
-        """
-        output = []
-        seen = set()
-        for value in list:
-            if value not in seen:
-                output.append(value)
-                seen.add(value)
-        return output
-
     def return_random_from_list(self, list):
         """
         Return a random element from a list.
@@ -63,30 +50,33 @@ class ListUtils(object):
         :param dimension: the entire dimension of the bar
         :return:[{'blue': 57, 'gray': 36, 'type': u'Policy type', 'red': 72, 'yellow': 29},{...}]
         """
-        # for template_now in policies_list:
-        #     for details in template_now['deploymentDetails']:
-        #         if details['deployment']['deploymentId'] == deployment_id:
-
-
         return_list = []
         for element in policies_type_list:
             list_item = {}
             list_item['type'] = element
             total = self.return_total_compliant_value(element, deployment_json)
-            print "element: ", element, ' total: ', total
+            print 'element: ', element, ' total: ', total
             if self.grab_compliant_in_MSLO_of_same_policy_type(element, deployment_json) != 0:
                 actual = self.grab_compliant_in_MSLO_of_same_policy_type(element, deployment_json) \
                          + self.grab_exceptBeforeExp_of_same_policy_type(element, deployment_json)
-                list_item['green'] = self.value(self.percent(total, actual), dimension)
+                print 'actual green:', actual
+                list_item['green'] = self.return_the_value_of_each_bar(
+                    self.return_percent_of_actual_score_from_entire_score(total, actual), dimension)
             if self.grab_noncompliant_in_RSLO_of_same_policy_type(element, deployment_json) != 0:
                 actual = self.grab_noncompliant_in_RSLO_of_same_policy_type(element, deployment_json)
-                list_item['yellow'] = self.value(self.percent(total, actual), dimension)
+                print 'actual yellow:', actual
+                list_item['yellow'] = self.return_the_value_of_each_bar(
+                    self.return_percent_of_actual_score_from_entire_score(total, actual), dimension)
             if self.grab_noncompliant_out_RSLO_of_same_policy_type(element, deployment_json) != 0:
                 actual = self.grab_noncompliant_out_RSLO_of_same_policy_type(element, deployment_json)
-                list_item['red'] = self.value(self.percent(total, actual), dimension)
+                print 'actual red:', actual
+                list_item['red'] = self.return_the_value_of_each_bar(
+                    self.return_percent_of_actual_score_from_entire_score(total, actual), dimension)
             if self.grab_failed_of_same_policy_type(element, deployment_json) != 0:
                 actual = self.grab_failed_of_same_policy_type(element, deployment_json)
-                list_item['gray'] = self.value(self.percent(total, actual), dimension)
+                print 'actual gray:', actual
+                list_item['gray'] = self.return_the_value_of_each_bar(
+                    self.return_percent_of_actual_score_from_entire_score(total, actual), dimension)
             return_list.append(list_item)
         return return_list
 
@@ -155,7 +145,7 @@ class ListUtils(object):
 
         return sum
 
-    def percent(self, total, actual):
+    def return_percent_of_actual_score_from_entire_score(self, total, actual):
         """
          Return the percent of a specific compliant from the entire compliant score percentage
         :param total: total score
@@ -165,7 +155,7 @@ class ListUtils(object):
         procent = (float(actual) * 100) / float(total)
         return procent
 
-    def value(self, percent, dimension):
+    def return_the_value_of_each_bar(self, percent, dimension):
         """
         Return the value of each bar by calculating it considering the percent of compliant and the entire dimension of bar
         :param percent:percent of compliant
@@ -173,13 +163,17 @@ class ListUtils(object):
         :return: dimension of bar
         """
         val = ((dimension * percent) / 100)
-        val2 = int(val)
-        val = val2 + 1
-        return val
+        print 'val: ', val
+        if val - int(val) != 0:
+            val2 = int(val) + 1
+        else:
+            val2 = int(val)
+        print 'val2: ', val2
+        return val2
 
     def grab_list_of_dictionary_of_policies_types_for_deployment_id(self, deployment_json):
         """
-        From deployment json, return the list of policy type names
+        From deployment json, return the list of dictionary of policy type names, the number of appearances, variances
         :return: list(policy_name,...)
         """
         policy_type_list = []
@@ -203,25 +197,16 @@ class ListUtils(object):
                                                policy_now['policy']['complianceScore']['noncompliantOutRSLO']
         return policy_type_list
 
-    def add_variances_termination_to_policies_type_dictionary_list(self, policy_type_list):
+    def convert_policies_type_dictionary_list_in_string_elements(self, policy_type_list):
+        """
+        Convert int type element from dictionary list in str type element
+        :param policy_type_list:
+        :return:
+        """
         for policy in policy_type_list:
             policy['variances'] = str(policy['variances']) + ' Variances'
+            policy['number'] = str(policy['number'])
         return policy_type_list
-
-    def grab_total_of_same_policy_type(self, deployment_id, policy_type, templtes_list):
-        """
-        From the policies list, return the number of policies items with the same type
-        :return: total
-        """
-        sum = 0
-        for template_now in templtes_list:
-            for details in template_now['deploymentDetails']:
-                if details['deployment']['deploymentId'] == deployment_id:
-                    for policies in details['deployment']['attachedPolicies']:
-                        if policies['policy']['policyType']['name'] == policy_type:
-                            sum += 1
-
-        return sum
 
     def grab_undefined_policies(self, policy_type, policies_list):
         """
@@ -272,31 +257,6 @@ class ListUtils(object):
 
         return return_list
 
-    def grab_template_data(self, template_name, templtes_list):
-        """
-        Grabbes template date as displayed on the template details page.
-        :param template_name:
-        :param templtes_list:
-        :return item{resourceTypes[],attachedPolicies[],noOfDeployments}:
-        """
-        policy_details = {}
-        for template_now in templtes_list:
-
-            if template_now['template']['template']['templateName'] == template_name:
-                resource_types = []
-                for resource_now in template_now['template']['template']['resourceTypes']:
-                    resource_types.append(resource_now['resourceName'])
-                policy_details['resourceTypes'] = resource_types
-
-                policies_list = []
-                for policy_now in template_now['template']['template']['attachedPolicies']:
-                    policies_list.append(policy_now['policy']['name'])
-                policy_details['attachedPolicies'] = policies_list
-
-                policy_details['noOfDeployments'] = template_now['noOfDeployments']
-
-        return policy_details
-
     def grab_list_of_deployment_info(self, deployment_id, templtes_list):
         """
         From json grabbed from api, returns a list of deployment info
@@ -314,22 +274,6 @@ class ListUtils(object):
                         details['complianceScore']['compliantPolicies']) + ' of ' + \
                                              str(details['complianceScore']['totalPolicies']) + ' Compliant'
         return list_item
-
-    # def grab_deployment_name_and_id(self, deployments_json):
-    #     """
-    #     From json grabbed from api, return a list of deployments name for a given template
-    #     :param template_name:
-    #     :param templtes_list:
-    #     :return:
-    #     """
-    #     deployment_list = []
-    #     for resource_now in deployments_json:
-    #         list_item = {}
-    #         list_item['deploymentName'] = resource_now['deploymentName']
-    #         list_item['deploymentId'] = resource_now['deploymentId']
-    #         deployment_list.append(list_item)
-    #
-    #     return deployment_list
 
     def get_last_remediate_scan_date(self, jobs_json):
         """
@@ -349,24 +293,6 @@ class ListUtils(object):
         else:
             return DateUtils().convert_long_to_aplication_format_date(min(list_scan))
 
-    # def grab_resources_from_deployment(self, deployment_id, templtes_list):
-    #     """
-    #     Create a list of dictionary for resources of a given deployment id
-    #     :param deployment_id:
-    #     :param templtes_list:
-    #     :return:
-    #     """
-    #     resource_list = []
-    #     for template_now in templtes_list:
-    #         for details in template_now['deploymentDetails']:
-    #             if details['deployment']['deploymentId'] == deployment_id:
-    #                 for resource in details['deployment']['resources']:
-    #                     list_item = {}
-    #                     list_item['resourceName'] = resource['resourceName']
-    #                     list_item['resourceId'] = resource['resourceId']
-    #                     resource_list.append(list_item)
-    #     return resource_list
-
     def grab_resources_from_deployment_mock(self, specific_deployment_json):
         """
         Create a list of dictionary for resources of a given deployment id
@@ -382,11 +308,17 @@ class ListUtils(object):
             resource_list.append(list_item)
         return resource_list
 
-    def grab_compliance_details_list(self, compliance_json, rule_id):
+    def grab_compliance_details_list(self, compliance_json, compliance_id):
+        """
+        Create a list of dictionary for a specific compliance from compliance json
+        :param compliance_json:
+        :param compliance_id:
+        :return:
+        """
         compliance_resources = []
         for compliance in compliance_json['members']:
             list_item = {}
-            if compliance['rule']['id'] == rule_id:
+            if compliance['rule']['id'] == compliance_id:
                 list_item['compliance_name'] = compliance['rule']['name']
                 if compliance['status'] == "ERROR":
                     list_item['compliance_status'] = "Failed"
@@ -401,6 +333,11 @@ class ListUtils(object):
         return compliance_resources
 
     def grab_compliance_name_and_id(self, compliance_json):
+        """
+        Create a list of dictionary of name and id for compliance
+        :param compliance_json:
+        :return:
+        """
         compliance_resources = []
         for compliance in compliance_json['members']:
             list_item = {}
@@ -419,7 +356,8 @@ class ListUtils(object):
         compliance_resources = []
         for compliance in compliance_json['members']:
             list_item = {}
-            list_item["name"] = compliance['rule']['name']
+            name = compliance['rule']['name']
+            list_item["name"] = name[0:70] + '...'
             if compliance['status'] == 'NOT COMPLIANT':
                 list_item["status"] = 'Non Compliant'
             elif compliance['status'] == "ERROR":
@@ -440,7 +378,8 @@ class ListUtils(object):
         compliance_resources = []
         for compliance in compliance_json['members']:
             list_item = {}
-            list_item["name"] = compliance['rule']['name']
+            name = compliance['rule']['name']
+            list_item["name"] = name[0:70] + '...'
             if compliance['status'] == 'NOT COMPLIANT':
                 list_item["status"] = 'Non Compliant'
             elif compliance['status'] == "ERROR":
@@ -473,24 +412,24 @@ class ListUtils(object):
                 compliance_list.append(item_list)
         return compliance_list
 
-    def create_compliance_time_list(self, compliance_json):
-        """
-        Create a list of dictionary for compliance from compliance json.
-        :param compliance_json:
-        :return:
-        """
-        compliance_list = []
-        for compliance in compliance_json['members']:
-            list_item = {}
-            list_item["name"] = compliance['rule']['ruleName']
-            if compliance['status'] == 'NOT COMPLIANT':
-                list_item["status"] = 'NON COMPLIANT'
-            else:
-                list_item["status"] = compliance['status']
-
-            list_item["date"] = self.convert_timpestamp_to_compliance_sort_time(compliance['createdDT'])
-            compliance_list.append(list_item)
-        return compliance_list
+    # def create_compliance_time_list(self, compliance_json):
+    #     """
+    #     Create a list of dictionary for compliance from compliance json.
+    #     :param compliance_json:
+    #     :return:
+    #     """
+    #     compliance_list = []
+    #     for compliance in compliance_json['members']:
+    #         list_item = {}
+    #         list_item["name"] = compliance['rule']['ruleName']
+    #         if compliance['status'] == 'NOT COMPLIANT':
+    #             list_item["status"] = 'NON COMPLIANT'
+    #         else:
+    #             list_item["status"] = compliance['status']
+    #
+    #         list_item["date"] = self.convert_timpestamp_to_compliance_sort_time(compliance['createdDT'])
+    #         compliance_list.append(list_item)
+    #     return compliance_list
 
     def convert_timpestamp_to_compliance_sort_time(self, timestamp):
         """
@@ -566,7 +505,7 @@ class ListUtils(object):
             policy_list.append(policy['type'])
         return policy_list
 
-    def grab_credential_list_by_name(self, credential_list_json, name):
+    def grab_credential_list_by_id(self, credential_list_json, credential_id):
         """
         From the credential request, it will grab the list of credentials, from the data section, for a given name
         :param credential_list_json:
@@ -575,28 +514,65 @@ class ListUtils(object):
         """
         credential_list = []
         for credential_now in credential_list_json:
-            if credential_now['name'] == name:
+            if credential_now['id'] == credential_id:
                 for credential_item in credential_now['data']:
                     credential_data = {}
+                    credential_data['name'] = credential_now['name']
                     credential_data['id'] = credential_item['id']
                     credential_data['key'] = credential_item['key']
                     credential_data['value'] = credential_item['value']
                     credential_list.append(credential_data)
-
         return credential_list
 
-    def grab_credential_name_list(self, credential_json):
+    def grab_credential_list_by_name(self, credential_list_json, credential_name):
+        """
+        From the credential request, it will grab the list of credentials, from the data section, for a given name
+        :param credential_list_json:
+        :param name:
+        :return:
+        """
+        credential_list = []
+        for credential_now in credential_list_json:
+            if credential_now['name'] == credential_name:
+                for credential_item in credential_now['data']:
+                    credential_data = {}
+                    credential_data['name'] = credential_now['name']
+                    credential_data['id'] = credential_item['id']
+                    credential_data['key'] = credential_item['key']
+                    credential_data['value'] = credential_item['value']
+                    credential_list.append(credential_data)
+        return credential_list
+
+    def grab_credential_data_list(self, credential_json):
         credential_list = []
         for credential in credential_json:
-            credential_list.append(credential['name'])
+            credential_data = {}
+            credential_data['id'] = credential['id']
+            credential_data['name'] = credential['name']
+            credential_list.append(credential_data)
         return credential_list
 
+    def grab_credential_data_from_credential_list(self, credential_list):
+        """
+        Create a list of data for a specific credential
+        :param credential_list:
+        :return:
+        """
+        credential_data_list = []
+        credential_data = {}
+        for credential in credential_list:
+            if credential['key'] == 'username':
+                credential_username = credential
+        credential_data['name'] = credential['name']
+        credential_data['username'] = credential_username['value']
+        credential_data_list.append(credential_data)
+        return credential_data_list
 
 
 if __name__ == "__main__":
     # print "grab_resources_from_deployment: ", ListUtils().grab_resources_from_deployment('1234', )
-    print "aa", 'AAAA'.title()
-
-    credential_json = RealApiUtils().grab_credential_json()
-    print ListUtils().grab_credential_list_by_name(credential_json, 'credCHAN')
-    print ListUtils().grab_credential_list_by_name(credential_json, 'blbla')
+    # print "aa", 'AAAA'.title()
+    #
+    # credential_json = RealApiUtils().grab_credential_json()
+    # print ListUtils().grab_credential_list_by_name(credential_json, 'credCHAN')
+    print ListUtils().grab_credential_list_by_id(credential_json, 'blbla')
