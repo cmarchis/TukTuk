@@ -39,7 +39,7 @@ class CredentialManagementScreenTest(unittest.TestCase):
         - is grabbing the data from the new credential
         - is clicking on save button from add credential layer
         - is making a API call to grab the credential data for the new credential
-        - is verifying that the data grab from API matches with the data grabbed from UI after add action
+        - is verifying that the dictionary list grab from API matches with the dictionary list grabbed from UI after add action
     """
 
     def setUp(self):
