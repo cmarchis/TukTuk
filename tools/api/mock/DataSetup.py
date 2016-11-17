@@ -16,6 +16,14 @@ class DataSetup(object):
             template_data = MockApiUtils().grab_templates_json(self.api_url)
         return template_data
 
+    def grab_policy_data(self):
+        policy_data = ''
+        # if self.api_type == 'real':
+            # policy_data = RealApiUtils().grab_policy_json()
+        if self.api_type == 'mock':
+            policy_data = MockApiUtils().grab_policy_json(self.api_url)
+        return policy_data
+
     def get_random_template_id(self):
         list_of_templates = ListUtils().grab_template_names_and_id(self.grab_template_data())
         random_template_list = ListUtils().return_random_from_list(list_of_templates)
