@@ -19,15 +19,7 @@ class ViewTemplatesTest(unittest.TestCase):
         self.user_pass = ConfigUtils().read_config_file()['userPass']
         self.api_url = ConfigUtils().read_config_file()['apiBaseURL']
 
-        self.random_template_id = DataSetup().get_random_template_id()
-        self.random_deployment_id = DataSetup().grab_random_deployment_by_template_id(self.random_template_id)
-        self.template_dictionary_list = DataSetup().grab_template_dictionary_list()
-        self.template_resource_types_list = DataSetup().grab_template_resources_types_for_template_id(
-            self.random_deployment_id)
-        self.template_policies_list = DataSetup().grab_template_policies_for_template_id(
-            self.random_deployment_id)
-        self.template_deployments_list = DataSetup().grab_template_deployments_for_template_id(
-            self.random_deployment_id)
+        self.policy_data = DataSetup().grab_policy_data()
 
         self.browser = DriverUtils().start_driver()
 
@@ -45,4 +37,15 @@ class ViewTemplatesTest(unittest.TestCase):
 
         policies_page = PoliciesListPage(self.browser)
         policies_data = policies_page.grab_policies_dictionary_list()
+
+        print "from page"
         print policies_data
+
+        print "from json"
+        print self.policy_data
+
+
+
+    def tearDown(self):
+        menuNavigationPage = MenuNavigationPage(self.browser)
+        menuNavigationPage.close_driver()

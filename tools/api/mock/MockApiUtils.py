@@ -5,6 +5,7 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import base64
 
 policies_url = 'http://localhost:8010/urest/v1/deployments'
+api_base_url = 'http://localhost:8010/urest/v1/'
 templates_url = '/template'
 deployment_url = '/deployment'
 resources_url = 'http://localhost:8010/urest/v1/compliance/compliance_detail?query=resource.id%20EQ%207404'
@@ -122,6 +123,11 @@ class MockApiUtils(object):
         json_object = json.load(response)
         return json_object
 
+    def grab_policy_json(self, api_url):
+        request = urllib2.Request(api_url + '/policy')
+        response = urllib2.urlopen(request)
+        json_object = json.load(response)
+        return json_object
 
 if __name__ == "__main__":
     # print 'grab_templates_json', MockApiUtils().grab_templates_json('http://localhost:8010/urest/v1')
