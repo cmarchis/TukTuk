@@ -10,13 +10,30 @@ from tools.DateUtils import DateUtils
 
 
 class ListUtils(object):
-    def sort_list_alphabetically_by(self, field_key, list):
+    def sort_dictionary_list_alphabetically_ascending_by(self, field_key, list):
         """
         Sort provided list by the values of the given field_key
         :return sorted_list:
         """
         sorted_list = sorted(list, key=lambda k: k[field_key])
         return sorted_list
+
+    def sort_dictionary_list_alphabetically_descending_by(self, field_key, list):
+        """
+        Sort provided list by the values of the given field_key
+        :return sorted_list:
+        """
+        sorted_list = sorted(list, key=lambda k: k[field_key], reverse=True)
+        return sorted_list
+
+    def sort_list_dictionary_natural_ascending_by_key(self, key, list):
+        """
+        Sort ascending a list of dictionary by specified key in a natural order. (in a human way not ascii order)
+        :param list:
+        :return:
+        """
+        new_list = natsort.natsorted(list, key=itemgetter(*[key]))
+        return new_list
 
     def sort_list_dictionary_natural_ascending(self, list):
         """
@@ -171,43 +188,6 @@ class ListUtils(object):
         print 'val2: ', val2
         return val2
 
-    def grab_list_of_dictionary_of_policies_types_for_deployment_id(self, deployment_json):
-        """
-        From deployment json, return the list of dictionary of policy type names, the number of appearances, variances
-        :return: list(policy_name,...)
-        """
-        policy_type_list = []
-        policy_type_name_list = []
-
-        for policy_now in deployment_json['attachedPolicies']:
-            for store_policy in policy_type_list:
-                policy_type_name_list.append(store_policy['type'])
-            policy_type = {}
-            if policy_now['policy']['policyType']['name'] not in policy_type_name_list:
-                policy_type['type'] = policy_now['policy']['policyType']['name']
-                policy_type['number'] = 1
-                policy_type['variances'] = policy_now['policy']['complianceScore']['noncompliantInRSLO'] + \
-                                           policy_now['policy']['complianceScore']['noncompliantOutRSLO']
-                policy_type_list.append(policy_type)
-            if policy_now['policy']['policyType']['name'] in policy_type_name_list:
-                for policy in policy_type_list:
-                    if policy_now['policy']['policyType']['name'] == policy['type']:
-                        policy['number'] += 1
-                        policy['variances'] += policy_now['policy']['complianceScore']['noncompliantInRSLO'] + \
-                                               policy_now['policy']['complianceScore']['noncompliantOutRSLO']
-        return policy_type_list
-
-    def convert_policies_type_dictionary_list_in_string_elements(self, policy_type_list):
-        """
-        Convert int type element from dictionary list in str type element
-        :param policy_type_list:
-        :return:
-        """
-        for policy in policy_type_list:
-            policy['variances'] = str(policy['variances']) + ' Variances'
-            policy['number'] = str(policy['number'])
-        return policy_type_list
-
     def grab_undefined_policies(self, policy_type, policies_list):
         """
         From the policies list, return the total of undefined policies with the same type
@@ -219,61 +199,6 @@ class ListUtils(object):
                 sum += policy_now['complianceScore']['unknown']
 
         return sum
-
-    def grab_list_dictionary_of_resources_for_deployment_id(self, deployment_json):
-        """
-        From list of policies, returns a list of resource name into correct compliance category
-        :return list(item[name, status],...):
-        """
-        return_list = []
-        for resources in deployment_json['resources']:
-            list_item = {}
-            list_item['name'] = resources['resourceName']
-            if resources['complianceScore']['unknown'] != 0:
-                list_item['status'] = "Unknown"
-            elif resources['complianceScore']['noncompliantOutRSLO'] != 0:
-                list_item['status'] = "Non Compliant"
-            elif resources['complianceScore']['noncompliantInRSLO'] != 0:
-                list_item['status'] = "Warning"
-            elif resources['complianceScore']['compliantInMSLO'] != 0:
-                list_item['status'] = "Compliant"
-
-            return_list.append(list_item)
-        return return_list
-
-    def grab_template_names_and_id(self, templtes_list):
-        """
-        From list of templates, returns a list of dictionary with template names and ids as a result
-        :return list(item{templateName,id},...):
-        """
-        return_list = []
-        for template_now in templtes_list:
-            list_item = {}
-            list_item['templateName'] = template_now['templateName']
-            list_item['templateID'] = template_now['templateID']
-            # list_item['templateName'] = template_now['template']['template']['templateName']
-            # list_item['templateID'] = template_now['template']['template']['templateID']
-            return_list.append(list_item)
-
-        return return_list
-
-    def grab_list_of_deployment_info(self, deployment_id, templtes_list):
-        """
-        From json grabbed from api, returns a list of deployment info
-        :return: list{'status': 'SUCCESS','template': 'Oracle', 'last_scanned':'September 26, 2016'}
-        """
-        list_item = {}
-        for template_now in templtes_list:
-            for details in template_now['deploymentDetails']:
-                if details['deploymentId'] == deployment_id:
-                    list_item['status'] = details['status']
-                    list_item['template'] = details['templateName']
-                    list_item['last_scanned'] = DateUtils().convert_long_to_aplication_format_date(
-                        details['complianceScore']['lastScanDate'])
-                    list_item['compliant'] = str(
-                        details['complianceScore']['compliantPolicies']) + ' of ' + \
-                                             str(details['complianceScore']['totalPolicies']) + ' Compliant'
-        return list_item
 
     def get_last_remediate_scan_date(self, jobs_json):
         """
@@ -307,30 +232,6 @@ class ListUtils(object):
             list_item['resourceId'] = details['resourceId']
             resource_list.append(list_item)
         return resource_list
-
-    def grab_compliance_details_list(self, compliance_json, compliance_id):
-        """
-        Create a list of dictionary for a specific compliance from compliance json
-        :param compliance_json:
-        :param compliance_id:
-        :return:
-        """
-        compliance_resources = []
-        for compliance in compliance_json['members']:
-            list_item = {}
-            if compliance['rule']['id'] == compliance_id:
-                list_item['compliance_name'] = compliance['rule']['name']
-                if compliance['status'] == "ERROR":
-                    list_item['compliance_status'] = "Failed"
-                elif compliance['status'] == "NOT COMPLIANT":
-                    list_item['compliance_status'] = "Non Compliant"
-                else:
-                    list_item['compliance_status'] = compliance['status'].title()
-                list_item['compliance_policy'] = compliance['policy']['name']
-                list_item['compliance_requirement'] = compliance['requirement']['name']
-                list_item['compliance_control'] = compliance['control']['name']
-                compliance_resources.append(list_item)
-        return compliance_resources
 
     def grab_compliance_name_and_id(self, compliance_json):
         """
@@ -412,25 +313,6 @@ class ListUtils(object):
                 compliance_list.append(item_list)
         return compliance_list
 
-    # def create_compliance_time_list(self, compliance_json):
-    #     """
-    #     Create a list of dictionary for compliance from compliance json.
-    #     :param compliance_json:
-    #     :return:
-    #     """
-    #     compliance_list = []
-    #     for compliance in compliance_json['members']:
-    #         list_item = {}
-    #         list_item["name"] = compliance['rule']['ruleName']
-    #         if compliance['status'] == 'NOT COMPLIANT':
-    #             list_item["status"] = 'NON COMPLIANT'
-    #         else:
-    #             list_item["status"] = compliance['status']
-    #
-    #         list_item["date"] = self.convert_timpestamp_to_compliance_sort_time(compliance['createdDT'])
-    #         compliance_list.append(list_item)
-    #     return compliance_list
-
     def convert_timpestamp_to_compliance_sort_time(self, timestamp):
         """
         For a given timestamp is returning a string witch specifies the difference between given timestamp and the
@@ -440,50 +322,23 @@ class ListUtils(object):
         """
         date = ''
         self.found = False
-        today = time.strftime('%Y-%m-%d')
-        start_week = DateUtils().get_date_before_current_date(7)
-        end_week = DateUtils().get_date_before_current_date(1)
-        start_month = DateUtils().get_date_before_current_date(29)
-        end_month = DateUtils().get_date_before_current_date(8)
-        if DateUtils().date_between(DateUtils().convert_long_y_m_d(timestamp), today, today):
+        time_now = time.time()
+        start_day = time_now - 86400
+        start_week = time_now - 604800
+        start_month = time_now - 2505600
+
+        if timestamp > start_day:
             date = 'Today'
             self.found = True
-        elif DateUtils().date_between(DateUtils().convert_long_y_m_d(timestamp), start_week, end_week):
+        elif timestamp > start_week:
             date = 'Last 7 days'
             self.found = True
-        elif DateUtils().date_between(DateUtils().convert_long_y_m_d(timestamp), start_month, end_month):
-            date = 'Last month'
+        elif timestamp > start_month:
+            date = 'Last 30 days'
             self.found = True
         elif self.found != True:
             date = 'Older'
         return date
-
-    def grab_template_dictionary_list(self, template_json):
-        template_list = []
-        for template_now in template_json:
-            template = {}
-            template['name'] = template_now['templateName']
-            template['deployments'] = str(template_now['noOfDeployments']) + ' Deployments'
-            template_list.append(template)
-        return template_list
-
-    def grab_template_resources_types_for_template_id(self, template_id, template_json):
-        resources_types = []
-        for template_now in template_json:
-            if template_now['templateID'] == template_id:
-                i = 0
-                for resource_type_now in template_now['resourceTypes']:
-                    i += 1
-                    resources_types.append(str(i) + '.   ' + resource_type_now['resourceName'])
-        return resources_types
-
-    def grab_template_policies_for_template_id(self, template_id, template_json):
-        policies = []
-        for template_now in template_json:
-            if template_now['templateID'] == template_id:
-                for policy_now in template_now['attachedPolicies']:
-                    policies.append(policy_now['name'])
-        return policies
 
     def grab_template_deployments_for_template_id(self, template_id, template_json):
         deployments_list = []
@@ -568,6 +423,29 @@ class ListUtils(object):
         credential_data_list.append(credential_data)
         return credential_data_list
 
+    def grab_policy_details(self, policy_details_json):
+        policy_details = []
+        policy_data = {}
+        policy_data['name'] = policy_details_json['name']
+        policy_data['description'] = policy_details_json['description']
+        policy_data['policyType'] = policy_details_json['policyType']['name']
+        policy_details.append(policy_data)
+        return policy_details
+
+    def verify_dictionary_list_matches(self, a, b):
+        list = []
+        matches = False
+        n = 0
+        for i in xrange(len(a)):
+            for j in xrange(len(b)):
+                if a[i] == b[j]:
+                    n += 1
+                else:
+                    list.append(b[j])
+        if n == len(a) and n == len(b):
+            matches = True
+        return matches
+
 
 if __name__ == "__main__":
     # print "grab_resources_from_deployment: ", ListUtils().grab_resources_from_deployment('1234', )
@@ -575,4 +453,10 @@ if __name__ == "__main__":
     #
     # credential_json = RealApiUtils().grab_credential_json()
     # print ListUtils().grab_credential_list_by_name(credential_json, 'credCHAN')
-    print ListUtils().grab_credential_list_by_id(credential_json, 'blbla')
+    # print ListUtils().grab_credential_list_by_id(credential_json, 'blbla')
+
+    a = [{'a': '1'}, {'b': '2'}]
+    b = [{'b': '2'}, {'a': '2'}]
+
+    # print ListUtils().convert_timpestamp_to_compliance_sort_time(1481708056)
+    print ListUtils().convert_timpestamp_to_compliance_sort_time(1481875663)

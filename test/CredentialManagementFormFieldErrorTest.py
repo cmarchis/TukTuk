@@ -11,7 +11,7 @@ from tools.ConfigUtils import ConfigUtils
 from tools.api.mock.DataSetup import DataSetup
 
 
-class CredentialManagementScreenTest(unittest.TestCase):
+class CredentialManagementFormFieldErrorTest(unittest.TestCase):
     """
     Test contain 4 verification steps:
         - is verifying that for the specified field is displayed the expected error message in add credential layer
@@ -40,6 +40,7 @@ class CredentialManagementScreenTest(unittest.TestCase):
         - is clicking the save button from edit credential layer
         - is verifying that the expected error message for confirm password field is displayed in edit credential layer
     """
+
     def setUp(self):
         self.base_url = ConfigUtils().read_config_file()['baseURL']
         self.user_name = ConfigUtils().read_config_file()['userName']
@@ -63,7 +64,7 @@ class CredentialManagementScreenTest(unittest.TestCase):
         login_page.perform_login(self.user_name, self.user_pass)
 
         landing_page = LandingPage(self.browser)
-        landing_page.select_provision()
+        landing_page.select_settings_from_menu()
 
         menu_navigation_page.click_on_menu_item('Credential')
         credential_page = CredentialPage(self.browser)

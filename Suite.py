@@ -1,9 +1,9 @@
 import unittest
-from test.AdHocScanComplianceAndRemediateDeploymentTest import AdHocScanComplianceAndRemediateDeploymentTest
-from test.ViewDeploymentComplianceResultDetailsTest import ViewDeploymentComplianceResultDetailsTest
+from test.ViewRequirementsTreeTest import ViewRequirementsTreeTest
+from test.ViewPolicyDetailsTest import ViewPolicyDetailsTest
 
-tests1 = unittest.TestLoader().loadTestsFromTestCase(AdHocScanComplianceAndRemediateDeploymentTest)
-tests2 = unittest.TestLoader().loadTestsFromTestCase(ViewDeploymentComplianceResultDetailsTest)
+tests1 = unittest.TestLoader().loadTestsFromTestCase(ViewRequirementsTreeTest)
+tests2 = unittest.TestLoader().loadTestsFromTestCase(ViewPolicyDetailsTest)
 
 all_tests = unittest.TestSuite([tests1, tests2])
 

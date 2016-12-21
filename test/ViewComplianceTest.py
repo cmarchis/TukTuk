@@ -3,16 +3,13 @@ from operator import itemgetter
 
 from pages.MenuNavigationPage import MenuNavigationPage
 from pages.compliance.CompliancePage import CompliancePage
-from pages.deployments.DeploymentsPage import DeploymentsPage
-from pages.templates.TemplatesMenuListPage import TemplatesMenuListPage
-from pages.templates.details.TemplateDetailsPage import TemplateDetailsPage
 from pages.LoginPage import LoginPage
 from pages.LandingPage import LandingPage
 from tools.DriverUtils import DriverUtils
 from tools.ListUtils import ListUtils
 from tools.SoftAssert import SoftAssert
-from tools.api.mock.DataSetup import DataSetup
 from tools.ConfigUtils import ConfigUtils
+from tools.dataSetup.ComplianceDataSetup import ComplianceDataSetup
 
 
 class ViewComplianceTest(unittest.TestCase):
@@ -58,21 +55,24 @@ class ViewComplianceTest(unittest.TestCase):
         self.user_pass = ConfigUtils().read_config_file()['userPass']
         self.api_url = ConfigUtils().read_config_file()['apiBaseURL']
 
-        compliance_list_by_resource = DataSetup().grab_all_compliance_list()
+        compliance_list_by_resource = ComplianceDataSetup().grab_all_compliance_list()
         self.api_sorted_compliance_dictionary = sorted(compliance_list_by_resource,
                                                        key=itemgetter('name', 'key', 'status'))
         self.status = 'Compliant'
-        api_compliance_list_by_resource_of_given_status = DataSetup().grab_compliance_list_of_given_status(self.status)
+        api_compliance_list_by_resource_of_given_status = ComplianceDataSetup().grab_compliance_list_of_given_status(
+            self.status)
         self.sorted_api_compliance_list_by_resource_of_given_status = sorted(
             api_compliance_list_by_resource_of_given_status, key=itemgetter('name', 'key', 'status'))
         self.sort_option = 'Requirement'
+        self.expected_list_macthes = True
 
-        api_compliance_list_by_resources_sorted_by_given_option = DataSetup().grab_compliance_list_sorted_by_key(
+        api_compliance_list_by_resources_sorted_by_given_option = ComplianceDataSetup().grab_compliance_list_sorted_by_key(
             self.sort_option)
-        self.sorted_api_compliance_list_by_resources_sorted_by_given_option = ListUtils().sort_list_dictionary_natural_ascending(
-            api_compliance_list_by_resources_sorted_by_given_option)
-        self.sorted_api_compliance_list_by_resources_sorted_ordered_by_given_option = ListUtils().sort_list_dictionary_natural_descending(
-            api_compliance_list_by_resources_sorted_by_given_option)
+        self.sorted_api_compliance_list_by_given_option_ascending = ComplianceDataSetup().grab_sorted_ascending_compliance_list(
+            self.sort_option)
+
+        self.sorted_api_compliance_list_by_given_option_descending = ComplianceDataSetup().grab_sorted_descending_compliance_list(
+            self.sort_option)
 
         self.browser = DriverUtils().start_driver()
 
@@ -85,7 +85,7 @@ class ViewComplianceTest(unittest.TestCase):
         login_page.perform_login(self.user_name, self.user_pass)
 
         landing_page = LandingPage(self.browser)
-        landing_page.select_provision()
+        landing_page.select_resource_management_from_menu()
 
         menu_navigation_page.click_on_menu_item('Compliance')
 
@@ -118,23 +118,30 @@ class ViewComplianceTest(unittest.TestCase):
         compliance_page.select_sort_option(self.sort_option)
 
         compliance_page.scroll_until_all_compliance_are_visible(
-            len(self.sorted_api_compliance_list_by_resources_sorted_by_given_option))
-        aplication_compliance_list_dictionary_sort = compliance_page.create_list_of_dictionary_for_compliance()
+            len(self.sorted_api_compliance_list_by_given_option_ascending))
+        aplication_compliance_list_dictionary_sort = compliance_page.create_list_of_dictionary_for_compliance_with_id()
+
+        verify_list_matches_ascending = ListUtils().verify_dictionary_list_matches(
+            self.sorted_api_compliance_list_by_given_option_ascending,
+            aplication_compliance_list_dictionary_sort)
+
 
         SoftAssert().verfy_equals_true(
             "List of compliance, sorted, grabbed from API and doesn't matches with the one grabbed from UI ",
-            self.sorted_api_compliance_list_by_resources_sorted_by_given_option,
-            aplication_compliance_list_dictionary_sort)
+            verify_list_matches_ascending, self.expected_list_macthes)
 
         compliance_page.select_sort_order('descending')
         compliance_page.scroll_until_all_compliance_are_visible(
-            len(self.sorted_api_compliance_list_by_resources_sorted_ordered_by_given_option))
-        aplication_compliance_list_dictionary_sort_order = compliance_page.create_list_of_dictionary_for_compliance()
+            len(self.sorted_api_compliance_list_by_given_option_descending))
+        aplication_compliance_list_dictionary_sort_order_descending = compliance_page.create_list_of_dictionary_for_compliance_with_id()
+
+        verify_list_matches_descending = ListUtils().verify_dictionary_list_matches(
+            self.sorted_api_compliance_list_by_given_option_descending,
+            aplication_compliance_list_dictionary_sort_order_descending)
 
         SoftAssert().verfy_equals_true(
             "List of compliance, sorted,ordered, grabbed from API and doesn't matches with the one grabbed from UI ",
-            self.sorted_api_compliance_list_by_resources_sorted_ordered_by_given_option,
-            aplication_compliance_list_dictionary_sort_order)
+            verify_list_matches_descending, self.expected_list_macthes)
 
         self.assertEqual(SoftAssert().failures_size(), 0, str(SoftAssert().failures_list()))
 

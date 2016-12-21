@@ -3,15 +3,13 @@ import unittest
 from pages.MenuNavigationPage import MenuNavigationPage
 from pages.deployments.DeploymentsMenuHeaderPage import DeploymentsMenuHeaderPage
 from pages.deployments.DeploymentsPage import DeploymentsPage
-from pages.templates.TemplatesMenuListPage import TemplatesMenuListPage
-from pages.templates.details.TemplateDetailsPage import TemplateDetailsPage
+from pages.deployments.DeploymentDetailsPage import DeploymentDetailsPage
 from pages.LoginPage import LoginPage
 from pages.LandingPage import LandingPage
 from tools.DriverUtils import DriverUtils
 from tools.SoftAssert import SoftAssert
 from tools.ConfigUtils import ConfigUtils
-from tools.api.mock.DataSetup import DataSetup
-
+from tools.dataSetup.DeploymentDataSetup import DeploymentDataSetup
 
 
 class IncludeComplianceActionsInDeploymentActionSectionTest(unittest.TestCase):
@@ -32,9 +30,12 @@ class IncludeComplianceActionsInDeploymentActionSectionTest(unittest.TestCase):
 
         self.expected_menu_option_list = ['Scan Compliance', 'Remediate', 'Change Template']
 
-        self.random_template_id = DataSetup().get_random_template_id()
-        self.random_deployment_id = DataSetup().grab_random_deployment_by_template_id(self.random_template_id)
-        self.api_deployment_info = DataSetup().grab_deployment_info_from_templates(self.random_deployment_id)
+        self.random_deployment_id = DeploymentDataSetup().grab_random_deployment_id()
+        self.api_total_policies = DeploymentDataSetup().grab_total_number_of_policies_for_deployment(
+            self.random_deployment_id)
+        self.api_deployment_info = DeploymentDataSetup().grab_deployment_info(self.random_deployment_id,
+                                                                              self.api_total_policies)
+        self.deployments_list_lenght = len(DeploymentDataSetup().grab_deployments_list())
         self.browser = DriverUtils().start_driver()
 
     def test_IncludeComplianceActionsInDeploymentActionSectionTest(self):
@@ -46,17 +47,17 @@ class IncludeComplianceActionsInDeploymentActionSectionTest(unittest.TestCase):
         login_page.perform_login(self.user_name, self.user_pass)
 
         landing_page = LandingPage(self.browser)
-        landing_page.select_provision()
+        landing_page.select_resource_management_from_menu()
 
-        templates_menu_list_page = TemplatesMenuListPage(self.browser)
-        templates_menu_list_page.click_on_template_by_id(self.random_template_id)
+        menu_navigation_page.click_on_menu_item('Deployments')
 
-        template_details_page = TemplateDetailsPage(self.browser)
-        template_details_page.select_deployment_by_id(self.random_deployment_id)
+        deployments_page = DeploymentsPage(self.browser)
+        deployments_page.select_deployment_by_id(self.random_deployment_id, self.deployments_list_lenght)
 
-        deployment_page = DeploymentsPage(self.browser)
+        deployment_page = DeploymentDetailsPage(self.browser)
 
-        aplication_deployment_info = deployment_page.create_list_of_dictionary_of_deployment_info()
+        aplication_deployment_info = deployment_page.create_list_of_dictionary_of_deployment_info(
+            self.api_total_policies)
         deployments_menu_header_page = DeploymentsMenuHeaderPage(self.browser)
         aplication_menu_options_list = deployments_menu_header_page.create_list_of_menu_options()
 

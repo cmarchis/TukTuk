@@ -1,25 +1,24 @@
 import unittest
-
 from pages.LoginPage import LoginPage
 from pages.MenuNavigationPage import MenuNavigationPage
 from pages.deployments.DeploymentsMenuHeaderPage import DeploymentsMenuHeaderPage
+from pages.deployments.DeploymentDetailsPage import DeploymentDetailsPage
 from pages.deployments.DeploymentsPage import DeploymentsPage
-from pages.templates.TemplatesMenuListPage import TemplatesMenuListPage
-from pages.templates.details.TemplateDetailsPage import TemplateDetailsPage
 from tools.ConfigUtils import ConfigUtils
 from tools.DriverUtils import DriverUtils
 from tools.SoftAssert import SoftAssert
 from tools.api.mock.DataSetup import DataSetup
+from tools.dataSetup.DeploymentDataSetup import DeploymentDataSetup
 from pages.LandingPage import LandingPage
 
 
 class AdHocScanComplianceAndRemediateDeploymentTest(unittest.TestCase):
     """
     Test contains 3 verification steps for each of scan compliance and remediate actions:
-    In the setUp phase is grabbed: - a random template and form that template a random deployment.
+    In the setUp phase is grabbed: - a random deployment.
                                    - the list of jobs for chosen deployment
                                    - the last scan/remediate date
-    Test is navigating to the chosen template and deployment and select Scan Compliance and Remediate menu action.
+    Test is navigating to the deployment and select Scan Compliance and Remediate menu action.
      After selecting those two option test is validating:
         - the pop up message that is displayed after those action contains expected message
         - the started date that is displayed in the pop up message matches with the date grabbed from deployment jobs json
@@ -32,9 +31,8 @@ class AdHocScanComplianceAndRemediateDeploymentTest(unittest.TestCase):
         self.user_pass = ConfigUtils().read_config_file()['userPass']
         self.api_url = ConfigUtils().read_config_file()['apiBaseURL']
 
-        self.random_template_id = DataSetup().get_random_template_id()
-        # self.random_template_id = '7b4ca205-7b75-459c-81f1-a61fc8b6be69'
-        self.random_deployment_id = DataSetup().grab_random_deployment_by_template_id(self.random_template_id)
+        self.random_deployment_id = DeploymentDataSetup().grab_random_deployment_id()
+        self.deployments_list_lenght = len(DeploymentDataSetup().grab_deployments_list())
 
         DataSetup().create_new_scan_job(self.random_deployment_id)
 
@@ -56,20 +54,19 @@ class AdHocScanComplianceAndRemediateDeploymentTest(unittest.TestCase):
         login_page.perform_login(self.user_name, self.user_pass)
 
         landing_page = LandingPage(self.browser)
-        landing_page.select_provision()
+        landing_page.select_resource_management_from_menu()
 
-        templates_menu_list_page = TemplatesMenuListPage(self.browser)
-        templates_menu_list_page.click_on_template_by_id(self.random_template_id)
+        menu_navigation_page.click_on_menu_item('Deployments')
 
-        template_details_page = TemplateDetailsPage(self.browser)
-        template_details_page.select_deployment_by_id(self.random_deployment_id)
+        deployments_page = DeploymentsPage(self.browser)
+        deployments_page.select_deployment_by_id(self.random_deployment_id, self.deployments_list_lenght)
 
         deployment_menu_header_page = DeploymentsMenuHeaderPage(self.browser)
         deployment_menu_header_page.click_on_header_menu_item("Scan Compliance")
-        deployment_page = DeploymentsPage(self.browser)
+        deployment_details_page = DeploymentDetailsPage(self.browser)
 
-        aplication_notification_message = deployment_page.get_notification_message()
-        aplication_notification_date = deployment_page.get_notification_date()
+        aplication_notification_message = deployment_details_page.get_notification_message()
+        aplication_notification_date = deployment_details_page.get_notification_date()
 
         SoftAssert().verfy_equals_true("Scan message isn't being displayed properly",
                                        self.expected_scan_message, aplication_notification_message)
@@ -81,11 +78,11 @@ class AdHocScanComplianceAndRemediateDeploymentTest(unittest.TestCase):
         SoftAssert().verfy_equals_true("Menu options aren't disable",
                                        self.expected_menu_option_state, aplication_menu_option_state)
 
-        deployment_page.wait_until_notification_disappear()
+        deployment_details_page.wait_until_notification_disappear()
 
         deployment_menu_header_page.click_on_header_menu_item("Remediate")
-        aplication_notification_message = deployment_page.get_notification_message()
-        aplication_notification_date = deployment_page.get_notification_date()
+        aplication_notification_message = deployment_details_page.get_notification_message()
+        aplication_notification_date = deployment_details_page.get_notification_date()
 
         SoftAssert().verfy_equals_true("Remediate message isn't being displayed properly",
                                        self.expected_remediate_message, aplication_notification_message)

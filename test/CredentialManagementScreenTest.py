@@ -14,15 +14,15 @@ from tools.StringUtils import StringUtils
 
 class CredentialManagementScreenTest(unittest.TestCase):
     """
-    Test contain 3 verification steps:
+    Test contain 4 verification steps:
         - is verifying that the credential list grabbed from API matches with the grabbed list from UI
         - is verifying that the data grab from API matches with the data grabbed from UI after edit action
         - is verifying that the data grab from API matches with the data grabbed from UI after add action
+        - is verifying that the deleted credential is no longer displayed
 
     In the setUp phase is grabbed:
         - list of credential
-        - random credential name
-        -
+        - random credential id
 
     Test:
         - is navigating to Credential page
@@ -40,6 +40,9 @@ class CredentialManagementScreenTest(unittest.TestCase):
         - is clicking on save button from add credential layer
         - is making a API call to grab the credential data for the new credential
         - is verifying that the dictionary list grab from API matches with the dictionary list grabbed from UI after add action
+        - is clicking on the edit button of a random credential
+        - is clicking remove button from edit credential page
+        - is verifying that the deleted credential is no longer displayed
     """
 
     def setUp(self):
@@ -59,6 +62,8 @@ class CredentialManagementScreenTest(unittest.TestCase):
         self.add_username = 'username' + add_random_string_number
         self.add_password = 'pass' + add_random_string_number
 
+        self.expected_find_after_remove_credential_by_id_status = False
+
         self.browser = DriverUtils().start_driver()
 
     def test_ViewTemplatesTest(self):
@@ -70,7 +75,7 @@ class CredentialManagementScreenTest(unittest.TestCase):
         login_page.perform_login(self.user_name, self.user_pass)
 
         landing_page = LandingPage(self.browser)
-        landing_page.select_provision()
+        landing_page.select_settings_from_menu()
 
         menu_navigation_page.click_on_menu_item('Credential')
 
@@ -86,6 +91,7 @@ class CredentialManagementScreenTest(unittest.TestCase):
         aplication_edit_credential_list = edit_credential_page.grab_credential_dictionary_list()
         edit_credential_page.click_save_button()
         edit_credential_list_by_id = DataSetup().grab_credential_data_by_id(self.random_credential_id)
+
         SoftAssert().verfy_equals_true("Edit credential details data doesn't matched with API grabbed data",
                                        edit_credential_list_by_id, aplication_edit_credential_list)
 
@@ -99,6 +105,15 @@ class CredentialManagementScreenTest(unittest.TestCase):
 
         SoftAssert().verfy_equals_true("Add credential data doesn't matched with API grabbed data",
                                        api_add_credential_list_by_name, aplication_add_credential_list)
+
+        credential_page.edit_credential(self.random_credential_id)
+        edit_credential_page = EditCredentialPage(self.browser)
+        edit_credential_page.click_remove_button()
+        remove_credential_by_id_status = credential_page.verify_delete_credential(self.random_credential_id)
+
+        SoftAssert().verfy_equals_true("Deleted credential was still found in credential list",
+                                       self.expected_find_after_remove_credential_by_id_status,
+                                       remove_credential_by_id_status)
 
         self.assertEqual(SoftAssert().failures_size(), 0, str(SoftAssert().failures_list()))
 

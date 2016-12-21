@@ -1,16 +1,15 @@
 import unittest
 
 from pages.MenuNavigationPage import MenuNavigationPage
-from pages.deployments.DeploymentsPage import DeploymentsPage
-from pages.templates.TemplatesMenuListPage import TemplatesMenuListPage
-from pages.templates.details.TemplateDetailsPage import TemplateDetailsPage
+from pages.deployments.DeploymentDetailsPage import DeploymentDetailsPage
 from tools.DriverUtils import DriverUtils
-from tools.ListUtils import ListUtils
 from tools.SoftAssert import SoftAssert
 from tools.ConfigUtils import ConfigUtils
-from tools.api.mock.DataSetup import DataSetup
 from pages.LoginPage import LoginPage
 from pages.LandingPage import LandingPage
+from pages.deployments.DeploymentsPage import DeploymentsPage
+from tools.dataSetup.DeploymentDataSetup import DeploymentDataSetup
+from tools.ListUtils import ListUtils
 
 
 class ViewDeploymentComplianceStatusOverviewTest(unittest.TestCase):
@@ -32,19 +31,19 @@ class ViewDeploymentComplianceStatusOverviewTest(unittest.TestCase):
         self.user_pass = ConfigUtils().read_config_file()['userPass']
         self.api_url = ConfigUtils().read_config_file()['apiBaseURL']
 
-        self.random_template_id = DataSetup().get_random_template_id()
-        self.random_deployment_id = DataSetup().grab_random_deployment_by_template_id(self.random_template_id)
-        self.random_resource_id = DataSetup().grab_random_resource_id_by_deployment_id(self.random_deployment_id)
+        self.random_deployment_id = DeploymentDataSetup().grab_random_deployment_id()
 
-        self.sorted_api_policies_types_dictionary = DataSetup().grab_policies_types_dictionary_list_for_deployment_id(
+        self.sorted_api_policies_types_dictionary = DeploymentDataSetup().grab_policies_types_dictionary_list_for_deployment_id(
             self.random_deployment_id)
-        self.api_resources_dictionary = DataSetup().grab_list_dictionary_of_resources_for_deployment_id(
+        self.api_resources_dictionary = DeploymentDataSetup().grab_list_dictionary_of_resources_for_deployment_id(
             self.random_deployment_id)
 
         aplication_bar_dimension = 192
 
-        self.api_policies_dimension_bar_dictionary_list = DataSetup().grab_list_of_policies_bar_dimensions(
+        self.api_policies_dimension_bar_dictionary_list = DeploymentDataSetup().grab_list_of_policies_bar_dimensions(
             self.random_deployment_id, aplication_bar_dimension)
+
+        self.deployments_list_lenght = len(DeploymentDataSetup().grab_deployments_list())
 
         self.browser = DriverUtils().start_driver()
 
@@ -58,17 +57,16 @@ class ViewDeploymentComplianceStatusOverviewTest(unittest.TestCase):
         login_page.perform_login(self.user_name, self.user_pass)
 
         landing_page = LandingPage(self.browser)
-        landing_page.select_provision()
+        landing_page.select_resource_management_from_menu()
 
-        templates_menu_list_page = TemplatesMenuListPage(self.browser)
-        templates_menu_list_page.click_on_template_by_id(self.random_template_id)
+        menu_navigation_page.click_on_menu_item('Deployments')
 
-        template_details_page = TemplateDetailsPage(self.browser)
-        template_details_page.select_deployment_by_id(self.random_deployment_id)
+        deployments_page = DeploymentsPage(self.browser)
+        deployments_page.select_deployment_by_id(self.random_deployment_id, self.deployments_list_lenght)
 
-        deployment_page = DeploymentsPage(self.browser)
-        aplication_policies_list = ListUtils().sort_list_alphabetically_by('type',
-                                                                           deployment_page.create_list_of_dictionary_for_policies())
+        deployment_page = DeploymentDetailsPage(self.browser)
+        aplication_policies_list = ListUtils().sort_dictionary_list_alphabetically_ascending_by('type',
+                                                                                                deployment_page.create_list_of_dictionary_for_policies())
 
         SoftAssert().verfy_equals_true("List of policies doesn't matched ",
                                        self.sorted_api_policies_types_dictionary, aplication_policies_list)

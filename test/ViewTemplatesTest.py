@@ -1,14 +1,14 @@
 import unittest
 
 from pages.MenuNavigationPage import MenuNavigationPage
-from pages.templates.TemplatesMenuListPage import TemplatesMenuListPage
+from pages.templates.TemplatesPage import TemplatesPage
 from pages.templates.details.TemplateDetailsPage import TemplateDetailsPage
 from pages.LoginPage import LoginPage
 from pages.LandingPage import LandingPage
 from tools.DriverUtils import DriverUtils
 from tools.SoftAssert import SoftAssert
 from tools.ConfigUtils import ConfigUtils
-from tools.api.mock.DataSetup import DataSetup
+from tools.dataSetup.TemplateDataSetup import TemplateDataSetup
 
 
 class ViewTemplatesTest(unittest.TestCase):
@@ -50,14 +50,15 @@ class ViewTemplatesTest(unittest.TestCase):
         self.user_pass = ConfigUtils().read_config_file()['userPass']
         self.api_url = ConfigUtils().read_config_file()['apiBaseURL']
 
-        self.random_template_id = DataSetup().get_random_template_id()
-        self.random_deployment_id = DataSetup().grab_random_deployment_by_template_id(self.random_template_id)
-        self.template_dictionary_list = DataSetup().grab_template_dictionary_list()
-        self.template_resource_types_list = DataSetup().grab_template_resources_types_for_template_id(
+        self.random_template_id = TemplateDataSetup().get_random_template_id()
+        self.random_deployment_id = TemplateDataSetup().grab_random_deployment_id_by_template_id(
+            self.random_template_id)
+        self.template_dictionary_list = TemplateDataSetup().grab_template_dictionary_list()
+        self.template_resource_types_list = TemplateDataSetup().grab_resources_types_for_template_id(
             self.random_deployment_id)
-        self.template_policies_list = DataSetup().grab_template_policies_for_template_id(
+        self.template_policies_list = TemplateDataSetup().grab_template_policies_for_template_id(
             self.random_deployment_id)
-        self.template_deployments_list = DataSetup().grab_template_deployments_for_template_id(
+        self.template_deployments_list = TemplateDataSetup().grab_deployments_dictionary_list_for_template_id(
             self.random_deployment_id)
 
         self.browser = DriverUtils().start_driver()
@@ -71,9 +72,9 @@ class ViewTemplatesTest(unittest.TestCase):
         login_page.perform_login(self.user_name, self.user_pass)
 
         landing_page = LandingPage(self.browser)
-        landing_page.select_provision()
+        landing_page.select_resource_management_from_menu()
 
-        template_menu = TemplatesMenuListPage(self.browser)
+        template_menu = TemplatesPage(self.browser)
         aplication_templates_dictionary_list = template_menu.grab_templates_dictionary_list()
 
         SoftAssert().verfy_equals_true(

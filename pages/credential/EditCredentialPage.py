@@ -8,6 +8,7 @@ PASSWORD_INPUT_SELECTOR = 'input#password'
 CONFIRM_PASSWORD_INPUT_SELECTOR = 'input#confirmPassword'
 SAVE_BUTTON_SELECTOR = 'footer button.grommetux-button'
 LABEL_LIST_SELECTOR = 'div.grommetux-form-field--size-medium'
+REMOVE_BUTTON_SELECTOR = 'svg.grommetux-control-icon-trash'
 
 
 class EditCredentialPage(WebdriverBase):
@@ -34,7 +35,7 @@ class EditCredentialPage(WebdriverBase):
     def click_save_button(self):
         save_button = self.locate_element_by_css_selector(SAVE_BUTTON_SELECTOR)
         save_button.click()
-        time.sleep(3)
+        time.sleep(5)
 
     def grab_credential_dictionary_list(self):
         credential_list = []
@@ -53,12 +54,6 @@ class EditCredentialPage(WebdriverBase):
                     boolean = True
         return boolean
 
-    # def clear_name(self):
-    #     name = self.locate_element_by_css_selector(NAME_INPUT_SELECTOR)
-    #     name.clear()
-    #     # self.execute_js('$(\'input#name\').value=\'\';')
-    #     self.execute_js('arguments[0].setAttribute("value", "")', name)
-
     def clear_name(self):
         name = self.locate_element_by_css_selector(NAME_INPUT_SELECTOR)
         value_length = len(name.get_attribute('value'))
@@ -76,3 +71,8 @@ class EditCredentialPage(WebdriverBase):
         self.edit_username(new_username)
         self.edit_password(new_password)
         self.confirm_password(new_password)
+
+    def click_remove_button(self):
+        delete_button = self.locate_element_by_css_selector(REMOVE_BUTTON_SELECTOR)
+        delete_button.click()
+        time.sleep(3)

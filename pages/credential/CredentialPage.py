@@ -32,3 +32,12 @@ class CredentialPage(WebdriverBase):
             credential_data['name'] = credential.find_element_by_css_selector('h4').text
             credential_name_list.append(credential_data)
         return credential_name_list
+
+    def verify_delete_credential(self, credential_id):
+        found = False
+        credential_list = self.locate_elements_by_css_selector(CREDENTIAL_LIST_SELECTOR)
+        for credential in credential_list:
+            if credential.get_attribute('id') == credential_id:
+                found = True
+                print "True"
+        return found

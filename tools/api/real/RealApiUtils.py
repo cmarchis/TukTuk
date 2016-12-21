@@ -1,17 +1,11 @@
 import urllib2, json
-from decimal import *
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
-import base64
 
-# policies_url = 'http://localhost:8010/urest/v1/deployments'
 templates_url = '/template'
 deployment_url = '/deployment'
-api_url_base = 'http://192.168.155.238:8080/urest/v1'
+api_url_base = 'https://192.168.155.238:8081/urest/v1'
 api_url_token = 'https://192.168.155.238:8443/idm-service/v2.0/tokens'
-
-
-# resources_url = 'http://localhost:8010/urest/v1/compliance/compliance_detail?query=resource.id%20EQ%207404'
 
 
 class RealApiUtils(object):
@@ -43,7 +37,7 @@ class RealApiUtils(object):
             templates_list.append(item_now)
         return templates_list
 
-    def grab_deployments_from_templates_json(self, api_url, template_id):
+    def grab_deployments_json_by_template_id(self, api_url, template_id):
         """
         Return a json containing all deployments from live api
         :return:
@@ -100,7 +94,7 @@ class RealApiUtils(object):
         """
         headers = {'X-Auth-Token': self.request_token()}
         request = urllib2.Request(
-            api_url + '/compliance/compliance_detail', headers=headers)
+            api_url + '/compliance/compliance_detail?count=1000', headers=headers)
         response = urllib2.urlopen(request)
         json_object = json.load(response)
         return json_object
@@ -123,25 +117,29 @@ class RealApiUtils(object):
         json_object = json.load(response)
         return json_object
 
-    def grab_policies_json_1(self, token):
-        """
-        Return a json containing all policies from API get request
-        :return:
-        """
-        headers = {'X-Auth-Token': token}
-        return requests.get(api_url_base + '/template', headers=headers).json()
+    def grab_policy_json(self, api_url):
+        headers = {'X-Auth-Token': self.request_token()}
+        request = urllib2.Request(
+            api_url + '/policy', headers=headers)
+        response = urllib2.urlopen(request)
+        json_object = json.load(response)
+        return json_object
 
     def create_new_scan_job_for_deployment(self, api_url, deployment_id):
         headers = {'X-Auth-Token': self.request_token(), 'Content-Type': 'application/json'}
         r = requests.post(api_url + '/deployment/' + deployment_id + '/scan_compliance', headers=headers, verify=False)
         return r.status_code
 
-    def grab_credential_json(self):
-        headers = {'X-Auth-Token': self.request_token(), 'Content-Type': 'application/json'}
-        return requests.get(api_url_base + '/credential', headers=headers).json()
+
+
+
+        # def grab_credential_json(self):
+        #     headers = {'X-Auth-Token': self.request_token(), 'Content-Type': 'application/json'}
+        #     return requests.get(api_url_base + '/credential', headers=headers).json()
 
 
 if __name__ == "__main__":
-    print RealApiUtils().create_new_scan_job_for_deployment('https://192.168.155.238:8081/urest/v1',
-                                                            'd10c819a38ccb5f7f3f4')
-    print RealApiUtils().grab_credential_json()
+    # print RealApiUtils().create_new_scan_job_for_deployment('https://192.168.155.238:8081/urest/v1',
+    #                                                         'd10c819a38ccb5f7f3f4')
+    print 'grab_credential_json', RealApiUtils().grab_deployments_json_by_template_id(
+        'https://192.168.155.238:8081/urest/v1', '7b4ca205-7b75-459c-81f1-a61fc8b6be69')

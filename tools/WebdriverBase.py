@@ -48,7 +48,7 @@ class WebdriverBase(object):
         Scroll in webpage by simulating user action of pressing page down button
         :return:
         """
-        time.sleep(1)
+        time.sleep(4)
         scroll = self.driver.find_element_by_css_selector(
             "div.index-tiles__section:first-child div.grommetux-tile--selectable:first-child")
         scroll.send_keys(Keys.END)
